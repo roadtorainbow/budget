@@ -209,8 +209,8 @@
       </div>
       <div class="form-group" style="flex: 1;">
         <label>照片備註 (拍照或相簿)</label>
-        <!-- 移除 capture 屬性，點擊時會同時彈出「拍照」與「相簿」選單 -->
-        <input type="file" id="inputPhoto" class="form-control" accept="image/*">
+        <!-- 改用明確的副檔名，允許系統開啟選擇器選取相簿照片或相機 -->
+        <input type="file" id="inputPhoto" class="form-control" accept="image/jpeg,image/png,image/heic,image/heif,image/webp">
       </div>
     </div>
     <button class="btn-submit" onclick="addExpense()">新增記帳</button>
