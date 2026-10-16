@@ -1,795 +1,2123 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>出國記帳與多人分帳</title>
-  <style>
-    :root {
-      --primary: #4a90e2;
-      --secondary: #2ecc71;
-      --bg: #f5f7fa;
-      --card-bg: #ffffff;
-      --text: #333333;
-      --text-muted: #666666;
-      --border: #e0e0e0;
-      --danger: #e74c3c;
-      --accent: #3498db;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#142b4a">
+<title>Travel Mate｜旅遊記帳</title>
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+<style>
+:root {
+  --primary: #193b63;
+  --primary-dark: #102944;
+  --primary-light: #eaf1fa;
+  --accent: #69d6b0;
+  --accent-dark: #28a982;
+  --bg: #f3f6fb;
+  --card: #ffffff;
+  --text: #23344d;
+  --muted: #8190a5;
+  --border: #e7edf4;
+  --danger: #e96868;
+  --radius: 20px;
+  --shadow: 0 8px 30px rgba(29, 56, 88, .06);
+}
 
-    header {
-      background: var(--primary);
-      color: white;
-      padding: 16px;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    .nav-tabs {
-      display: flex;
-      background: #ffffff;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 57px;
-      z-index: 99;
-    }
-    .tab-btn {
-      flex: 1;
-      padding: 12px;
-      border: none;
-      background: none;
-      font-size: 1em;
-      font-weight: bold;
-      color: var(--text-muted);
-      cursor: pointer;
-      border-bottom: 3px solid transparent;
-    }
-    .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Noto Sans TC", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: 40px;
+  -webkit-font-smoothing: antialiased;
+}
 
-    .container { max-width: 600px; margin: 0 auto; padding: 12px; }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+button, input, textarea {
+  font: inherit;
+}
 
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    }
-    .card-title {
-      font-size: 1em;
-      font-weight: bold;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+button {
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
 
-    .summary-card {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .summary-item { text-align: center; flex: 1; }
-    .summary-item .title { font-size: 0.8em; color: var(--text-muted); }
-    .summary-item .value { font-size: 1.3em; font-weight: bold; color: var(--primary); margin-top: 4px; }
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgba(105, 214, 176, .5);
+  outline-offset: 2px;
+}
 
-    .settings-bar {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      font-size: 0.9em;
-    }
-    .settings-bar input { width: 80px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; }
+.app-header {
+  background: linear-gradient(135deg, #193b63, #102944);
+  color: white;
+  padding: 27px 20px 66px;
+  position: relative;
+  overflow: hidden;
+}
 
-    .day-selector {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 8px;
-      margin-bottom: 16px;
-    }
-    .day-btn {
-      background: #e9ecef;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      white-space: nowrap;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .day-btn.active { background: var(--primary); color: white; }
+.app-header::before,
+.app-header::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
 
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 0.85em; color: var(--text-muted); margin-bottom: 4px; }
-    .form-control { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1em; }
-    .form-row { display: flex; gap: 10px; }
+.app-header::before {
+  width: 230px;
+  height: 230px;
+  right: -80px;
+  top: -130px;
+  background: rgba(255,255,255,.06);
+}
 
-    .btn-submit {
-      width: 100%;
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 1em;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-secondary { background: var(--secondary); }
-    .btn-accent { background: var(--accent); }
+.app-header::after {
+  width: 160px;
+  height: 160px;
+  right: 45px;
+  bottom: -115px;
+  background: rgba(105,214,176,.12);
+}
 
-    /* 明細列表 */
-    .item-list { display: flex; flex-direction: column; gap: 10px; }
-    .expense-item {
-      background: var(--card-bg);
-      border-radius: 10px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
-    }
-    .item-info { flex: 1; }
-    .item-title { font-weight: bold; font-size: 1em; }
-    .item-meta { font-size: 0.8em; color: var(--text-muted); margin-top: 2px; }
-    .item-amount { text-align: right; margin-left: 12px; }
-    .amount-foreign { font-weight: bold; font-size: 1.1em; }
-    .amount-twd { font-size: 0.8em; color: var(--text-muted); }
-    .item-thumb {
-      width: 48px;
-      height: 48px;
-      border-radius: 6px;
-      object-fit: cover;
-      margin-right: 12px;
-      cursor: pointer;
-    }
-    .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.2em; cursor: pointer; margin-left: 12px; }
+.header-inner {
+  max-width: 760px;
+  margin: auto;
+  position: relative;
+  z-index: 1;
+}
 
-    /* 拆帳專屬樣式 */
-    .member-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .member-tag {
-      background: #e8f8f5;
-      color: #27ae60;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.9em;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid #a3e4d7;
-    }
-    .member-tag button { background: none; border: none; color: var(--danger); font-weight: bold; cursor: pointer; }
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 
-    .split-item-row { border-bottom: 1px dashed var(--border); padding: 12px 0; }
-    .split-item-header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
-    .member-check-group { display: flex; flex-wrap: wrap; gap: 6px; }
-    .member-check-btn {
-      padding: 5px 12px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: #f8f9fa;
-      font-size: 0.85em;
-      cursor: pointer;
-      user-select: none;
-    }
-    .member-check-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
+.brand {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #b6cce4;
+  font-weight: 700;
+}
 
-    .split-result-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
+.header-badge {
+  font-size: 11px;
+  border: 1px solid rgba(255,255,255,.22);
+  padding: 6px 10px;
+  border-radius: 20px;
+  color: #d8e8f6;
+}
 
-    /* Modal 圖片預覽 */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      z-index: 200;
-      justify-content: center;
-      align-items: center;
-    }
-    .modal img { max-width: 90%; max-height: 80%; border-radius: 8px; }
+.app-header h1 {
+  font-size: clamp(25px, 5vw, 34px);
+  margin-top: 20px;
+  letter-spacing: .5px;
+}
 
-    .backup-tools { margin-top: 24px; text-align: center; font-size: 0.85em; color: var(--text-muted); }
-    .backup-tools button { padding: 6px 12px; background: #ddd; border: none; border-radius: 4px; margin: 0 4px; cursor: pointer; }
-  </style>
+.header-subtitle {
+  margin-top: 8px;
+  color: #c0d1e4;
+  font-size: 13px;
+}
+
+.nav-wrap {
+  max-width: 720px;
+  margin: -27px auto 0;
+  padding: 0 16px;
+  position: relative;
+  z-index: 5;
+}
+
+.nav-tabs {
+  display: flex;
+  padding: 6px;
+  gap: 6px;
+  background: white;
+  border-radius: 17px;
+  box-shadow: var(--shadow);
+}
+
+.tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 13px 8px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: .2s ease;
+}
+
+.tab-btn.active {
+  color: white;
+  background: var(--primary);
+  box-shadow: 0 4px 12px rgba(25,59,99,.18);
+}
+
+.container {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px 16px;
+}
+
+.tab-content {
+  display: none;
+  animation: fadeIn .22s ease;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid rgba(226,233,243,.7);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 17px;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.card-title .title-left {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.title-icon {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-light);
+  border-radius: 11px;
+  font-size: 17px;
+  flex-shrink: 0;
+}
+
+.settings-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.settings-label {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.settings-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.settings-controls input {
+  width: 88px;
+  min-width: 0;
+  padding: 8px;
+  background: #f7f9fc;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--text);
+}
+
+.settings-controls #exchangeRate {
+  width: 78px;
+}
+
+.summary-card {
+  background: linear-gradient(135deg, #193b63, #254f7d);
+  color: white;
+  padding: 23px 20px;
+  border: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card::after {
+  content: "";
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  right: -65px;
+  top: -95px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.05);
+  pointer-events: none;
+}
+
+.summary-heading {
+  font-size: 12px;
+  color: #ccdaeb;
+  margin-bottom: 7px;
+}
+
+.summary-main {
+  font-size: clamp(28px, 6vw, 37px);
+  font-weight: 800;
+  letter-spacing: -.5px;
+  overflow-wrap: anywhere;
+}
+
+.summary-currency {
+  font-size: 12px;
+  color: #d3e0ee;
+  margin-top: 5px;
+}
+
+.summary-divider {
+  height: 1px;
+  background: rgba(255,255,255,.17);
+  margin: 21px 0;
+}
+
+.summary-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.summary-item {
+  min-width: 0;
+}
+
+.summary-item + .summary-item {
+  border-left: 1px solid rgba(255,255,255,.2);
+  padding-left: 18px;
+}
+
+.summary-item .label {
+  font-size: 11px;
+  color: #ccdaeb;
+}
+
+.summary-item .value {
+  font-size: 19px;
+  font-weight: 800;
+  margin-top: 6px;
+  overflow-wrap: anywhere;
+}
+
+.day-selector {
+  display: flex;
+  gap: 9px;
+  overflow-x: auto;
+  padding: 3px 1px 12px;
+  margin-bottom: 10px;
+  scrollbar-width: thin;
+}
+
+.day-btn {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: white;
+  color: var(--muted);
+  padding: 10px 15px;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 700;
+  transition: .2s ease;
+}
+
+.day-btn.active {
+  background: var(--accent);
+  color: #143e34;
+  border-color: var(--accent);
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-group {
+  flex: 1;
+  min-width: 0;
+  margin-bottom: 14px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.form-control {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  color: var(--text);
+  background: #f9fbfd;
+  font-size: 14px;
+  transition: border-color .2s, background .2s;
+}
+
+.form-control:focus {
+  border-color: var(--accent-dark);
+  background: white;
+  outline: none;
+}
+
+.form-control::placeholder {
+  color: #a7b2c1;
+}
+
+input[type="file"].form-control {
+  padding: 9px;
+  font-size: 11px;
+}
+
+textarea.form-control {
+  resize: vertical;
+  line-height: 1.7;
+}
+
+.btn-submit {
+  width: 100%;
+  border: none;
+  background: var(--primary);
+  color: white;
+  padding: 13px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 800;
+  transition: transform .15s, filter .15s;
+}
+
+.btn-submit:hover {
+  filter: brightness(1.08);
+}
+
+.btn-submit:active {
+  transform: scale(.985);
+}
+
+.btn-secondary {
+  background: var(--accent-dark);
+  color: white;
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: #163e33;
+}
+
+.btn-small {
+  width: auto;
+  white-space: nowrap;
+  padding: 10px 14px;
+}
+
+.expense-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.expense-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  background: white;
+  border: 1px solid rgba(226,233,243,.7);
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(29,56,88,.035);
+  transition: transform .2s;
+}
+
+.expense-item:hover {
+  transform: translateY(-2px);
+}
+
+.item-thumb {
+  width: 53px;
+  height: 53px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.item-icon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--primary-light);
+  font-size: 21px;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title {
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.item-meta {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.item-amount {
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.amount-foreign {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.amount-twd {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.btn-delete {
+  border: none;
+  background: #fff0f0;
+  color: var(--danger);
+  width: 29px;
+  height: 29px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  font-size: 19px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 36px 15px;
+  background: white;
+  border-radius: 17px;
+  border: 1px dashed #d7e0ec;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 2;
+}
+
+.empty-icon {
+  font-size: 34px;
+  margin-bottom: 8px;
+}
+
+.backup-tools {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 12px 0;
+}
+
+.backup-tools button {
+  padding: 10px 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.member-input-row {
+  display: flex;
+  gap: 9px;
+}
+
+.member-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+
+.member-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 11px;
+  border: 1px solid #c6f0e2;
+  border-radius: 11px;
+  background: #e9faf4;
+  color: #247c62;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.member-tag button {
+  border: none;
+  background: transparent;
+  color: var(--danger);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.import-card {
+  background: #f0f7ff;
+  border-color: #dceaff;
+}
+
+.import-card .title-icon {
+  background: #dceaff;
+}
+
+.split-add-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.split-add-row .name-input {
+  flex: 1.5;
+}
+
+.split-add-row .price-input {
+  flex: 1;
+}
+
+.split-item-row {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.split-item-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.split-item-header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.split-item-header .name-control {
+  flex: 1.5;
+  font-weight: 700;
+}
+
+.split-item-header .price-control {
+  flex: 1;
+  text-align: right;
+}
+
+.member-check-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.member-check-btn {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #f8fafc;
+  color: var(--muted);
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.member-check-btn.selected {
+  border-color: var(--accent);
+  background: #dcf8ed;
+  color: #247c62;
+}
+
+.split-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+
+.split-result-row:last-child {
+  border-bottom: none;
+}
+
+.split-result-row .person-name {
+  font-weight: 700;
+}
+
+.split-result-row .person-total {
+  text-align: right;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.split-result-row .person-total small {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.total-row {
+  margin-top: 8px;
+  padding-top: 16px;
+  border-top: 2px solid var(--border);
+  font-weight: 800;
+}
+
+.section-caption {
+  margin-top: -8px;
+  margin-bottom: 15px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(9,20,35,.88);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal img {
+  display: block;
+  max-width: 100%;
+  max-height: 85vh;
+  border-radius: 14px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 300;
+  left: 50%;
+  bottom: 25px;
+  transform: translate(-50%, 15px);
+  padding: 12px 18px;
+  background: #183653;
+  color: white;
+  border-radius: 12px;
+  font-size: 13px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transition: .25s;
+  max-width: calc(100% - 32px);
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 480px) {
+  .app-header {
+    padding: 23px 17px 59px;
+  }
+
+  .app-header h1 {
+    margin-top: 17px;
+  }
+
+  .container {
+    padding: 17px 12px;
+  }
+
+  .card {
+    padding: 16px;
+    border-radius: 17px;
+  }
+
+  .form-row {
+    gap: 9px;
+  }
+
+  .summary-card {
+    padding: 20px 17px;
+  }
+
+  .summary-bottom {
+    gap: 8px;
+  }
+
+  .summary-item + .summary-item {
+    padding-left: 12px;
+  }
+
+  .summary-item .value {
+    font-size: 16px;
+  }
+
+  .expense-item {
+    gap: 9px;
+    padding: 12px 10px;
+  }
+
+  .item-thumb {
+    width: 43px;
+    height: 43px;
+  }
+
+  .item-icon {
+    width: 39px;
+    height: 39px;
+    font-size: 18px;
+  }
+
+  .amount-foreign {
+    font-size: 12px;
+  }
+
+  .item-title {
+    font-size: 13px;
+  }
+
+  .btn-delete {
+    width: 26px;
+    height: 26px;
+  }
+
+  .settings-card {
+    align-items: flex-start;
+  }
+
+  .settings-controls {
+    width: 100%;
+  }
+
+  .member-input-row {
+    flex-wrap: wrap;
+  }
+
+  .member-input-row .form-control {
+    flex: 1 1 150px;
+  }
+
+  .split-add-row {
+    gap: 8px;
+  }
+
+  .split-add-row .form-control {
+    padding: 11px 9px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
 </head>
+
 <body>
 
-<header>
-  <h1>✈️ 出國記帳與多人分帳</h1>
+<header class="app-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div class="brand">TRAVEL MATE</div>
+      <div class="header-badge">✈ 旅行中的每一筆</div>
+    </div>
+    <h1>出國記帳與分帳</h1>
+    <p class="header-subtitle">記錄旅途花費，讓每一次旅行都更輕鬆。</p>
+  </div>
 </header>
 
-<!-- 切換分頁選單 -->
-<div class="nav-tabs">
-  <button class="tab-btn active" onclick="switchTab('daily')">📖 每日記帳</button>
-  <button class="tab-btn" onclick="switchTab('split')">🍕 多人分帳計算機</button>
+<div class="nav-wrap">
+  <nav class="nav-tabs" aria-label="主要功能">
+    <button class="tab-btn active" data-tab="daily" onclick="switchTab('daily')">
+      📖 每日記帳
+    </button>
+    <button class="tab-btn" data-tab="split" onclick="switchTab('split')">
+      👥 多人分帳
+    </button>
+  </nav>
 </div>
 
-<div class="container">
+<main class="container">
 
-  <!-- 匯率與幣別設定 -->
-  <div class="card settings-bar">
-    <span>幣別：</span>
-    <input type="text" id="currencySymbol" value="JPY" onchange="updateSettings()">
-    <span>1 外幣 = </span>
-    <input type="number" id="exchangeRate" value="0.21" step="0.001" onchange="updateSettings()">
-    <span>TWD</span>
-  </div>
+  <!-- 匯率設定 -->
+  <section class="card settings-card">
+    <div class="settings-label">⚙️ 幣別與匯率</div>
+    <div class="settings-controls">
+      <span>幣別</span>
+      <input
+        type="text"
+        id="currencySymbol"
+        value="JPY"
+        maxlength="8"
+        aria-label="外幣幣別"
+      >
+      <span>1 單位 =</span>
+      <input
+        type="number"
+        id="exchangeRate"
+        value="0.21"
+        min="0.000001"
+        step="any"
+        aria-label="匯率"
+      >
+      <span>TWD</span>
+      <button
+        class="btn-submit btn-small"
+        style="padding:8px 12px"
+        onclick="updateSettings()"
+      >套用</button>
+    </div>
+  </section>
 
-  <!-- ================= 頁籤 1：每日記帳 ================= -->
-  <div id="tab-daily" class="tab-content active">
-    <!-- 總覽統計 -->
+  <!-- 每日記帳 -->
+  <section id="tab-daily" class="tab-content active">
+
     <div class="card summary-card">
-      <div class="summary-item">
-        <div class="title">當前視角總計 (<span class="curr-name">JPY</span>)</div>
-        <div class="value" id="dayTotalForeign">0</div>
-        <div class="item-meta" id="dayTotalTWD">≈ NT$ 0</div>
-      </div>
-      <div class="summary-item" style="border-left: 1px solid var(--border);">
-        <div class="title">旅程總累計 (TWD)</div>
-        <div class="value" id="grandTotalTWD">NT$ 0</div>
+      <div class="summary-heading" id="summaryHeading">本日消費總額</div>
+      <div class="summary-main" id="dayTotalForeign">0</div>
+      <div class="summary-currency" id="summaryCurrency">JPY</div>
+
+      <div class="summary-divider"></div>
+
+      <div class="summary-bottom">
+        <div class="summary-item">
+          <div class="label">折合新台幣</div>
+          <div class="value" id="dayTotalTWD">NT$ 0</div>
+        </div>
+        <div class="summary-item">
+          <div class="label">旅程累計支出</div>
+          <div class="value" id="grandTotalTWD">NT$ 0</div>
+        </div>
       </div>
     </div>
 
-    <!-- 按天選擇頁籤 -->
     <div class="day-selector" id="daySelector"></div>
 
-    <!-- 手動新增記帳 -->
-    <div class="card">
-      <div class="card-title">✍️ 新增手動記帳</div>
+    <section class="card">
+      <div class="card-title">
+        <div class="title-left">
+          <span class="title-icon">✍️</span>
+          新增一筆消費
+        </div>
+      </div>
+
       <div class="form-row">
-        <div class="form-group" style="flex: 1;">
-          <label>日期</label>
+        <div class="form-group">
+          <label for="inputDate">消費日期</label>
           <input type="date" id="inputDate" class="form-control">
         </div>
-        <div class="form-group" style="flex: 1.5;">
-          <label>項目內容</label>
-          <input type="text" id="inputTitle" class="form-control" placeholder="例: 藥妝店、拉麵">
+        <div class="form-group" style="flex:1.4">
+          <label for="inputTitle">消費項目</label>
+          <input
+            type="text"
+            id="inputTitle"
+            class="form-control"
+            maxlength="150"
+            placeholder="例如：拉麵、藥妝"
+          >
         </div>
       </div>
+
       <div class="form-row">
-        <div class="form-group" style="flex: 1;">
-          <label>金額 (<span class="curr-name">JPY</span>)</label>
-          <input type="number" id="inputAmount" class="form-control" placeholder="0" step="any">
+        <div class="form-group">
+          <label for="inputAmount">金額（外幣）</label>
+          <input
+            type="number"
+            id="inputAmount"
+            class="form-control"
+            min="0.01"
+            step="any"
+            placeholder="輸入金額"
+          >
         </div>
-        <div class="form-group" style="flex: 1;">
-          <label>照片備註</label>
-          <input type="file" id="inputPhoto" class="form-control" accept="image/*">
+        <div class="form-group">
+          <label for="inputPhoto">收據照片（選填）</label>
+          <input
+            type="file"
+            id="inputPhoto"
+            class="form-control"
+            accept="image/*"
+          >
         </div>
       </div>
-      <button class="btn-submit" onclick="addExpense()">新增記帳</button>
-    </div>
 
-    <!-- 明細列表 -->
-    <div class="item-list" id="itemList"></div>
+      <button class="btn-submit" onclick="addExpense()">＋ 新增記帳</button>
+    </section>
 
-    <!-- 備份工具 -->
+    <section>
+      <div class="card-title" style="padding:4px 3px">
+        <div class="title-left">
+          <span class="title-icon">🧾</span>
+          消費明細
+        </div>
+        <span id="expenseCount" style="font-size:11px;color:var(--muted)">
+          0 筆紀錄
+        </span>
+      </div>
+
+      <div class="expense-list" id="itemList"></div>
+    </section>
+
     <div class="backup-tools">
-      <button onclick="exportData()">匯出備份資料</button>
-      <button onclick="importData()">匯入備份資料</button>
+      <button onclick="exportData()">📤 匯出備份</button>
+      <button onclick="importData()">📥 匯入備份</button>
     </div>
-  </div>
+  </section>
 
-  <!-- ================= 頁籤 2：多人分帳計算機 ================= -->
-  <div id="tab-split" class="tab-content">
-    
-    <!-- 1. 成員管理 -->
-    <div class="card">
-      <div class="card-title">👥 參與分帳人員</div>
-      <div class="form-row">
-        <input type="text" id="newMemberInput" class="form-control" placeholder="輸入成員名字 (例: 小明)">
-        <button class="btn-submit" style="width: auto; white-space: nowrap;" onclick="addMember()">新增成員</button>
+  <!-- 多人分帳 -->
+  <section id="tab-split" class="tab-content">
+
+    <section class="card">
+      <div class="card-title">
+        <div class="title-left">
+          <span class="title-icon">👥</span>
+          旅行成員
+        </div>
+        <span style="font-size:11px;color:var(--muted)" id="memberCount">
+          3 位成員
+        </span>
       </div>
+
+      <p class="section-caption">新增一起旅行的夥伴，設定每筆消費由哪些人共同分攤。</p>
+
+      <div class="member-input-row">
+        <input
+          type="text"
+          id="newMemberInput"
+          class="form-control"
+          maxlength="50"
+          placeholder="輸入成員名稱"
+        >
+        <button class="btn-submit btn-small" onclick="addMember()">＋ 新增成員</button>
+      </div>
+
       <div class="member-tags" id="memberTagsList"></div>
-    </div>
+    </section>
 
-    <!-- 2. AI 解析文字快速貼上匯入區 -->
-    <div class="card" style="background: #f0f7ff; border: 1px solid #b3d7ff;">
-      <div class="card-title" style="color: #0056b3;">📋 貼上 AI 解析出的收據文字</div>
+    <section class="card import-card">
+      <div class="card-title">
+        <div class="title-left">
+          <span class="title-icon">📋</span>
+          收據文字快速匯入
+        </div>
+      </div>
+
+      <p class="section-caption">
+        將整理好的消費明細貼上，每行一筆，支援「拉麵 1200」或「拉麵：1,200」格式。
+      </p>
+
       <div class="form-group">
-        <textarea id="pasteTextarea" class="form-control" rows="3" placeholder="可以直接把我幫你整理好的發票明細貼在這裡！例如：&#10;拉麵 1200&#10;煎餃 450&#10;綠茶 150"></textarea>
+        <textarea
+          id="pasteTextarea"
+          class="form-control"
+          rows="4"
+          placeholder="拉麵 1200&#10;煎餃 450&#10;綠茶 150"
+        ></textarea>
       </div>
-      <button class="btn-submit btn-accent" onclick="parseAndImportText()">🚀 一鍵匯入分帳清單</button>
-    </div>
 
-    <!-- 3. 單筆新增共同消費 -->
-    <div class="card">
-      <div class="card-title">➕ 新增單筆消費金額</div>
-      <div class="form-row">
-        <input type="text" id="splitItemName" class="form-control" placeholder="項目內容 (例: 居酒屋)" style="flex: 1.5;">
-        <input type="number" id="splitItemPrice" class="form-control" placeholder="總金額" style="flex: 1;">
+      <button class="btn-submit btn-accent" onclick="parseAndImportText()">
+        🚀 一鍵匯入消費明細
+      </button>
+    </section>
+
+    <section class="card">
+      <div class="card-title">
+        <div class="title-left">
+          <span class="title-icon">➕</span>
+          新增共同消費
+        </div>
       </div>
-      <button class="btn-submit" onclick="addSplitItem()">加入分帳列表</button>
-    </div>
 
-    <!-- 4. 明細與分攤人員勾選 -->
-    <div class="card" id="splitItemsCard" style="display:none;">
-      <div class="card-title">📝 明細與分攤人員 (預設平均分配，點擊可切換)</div>
+      <div class="split-add-row">
+        <input
+          type="text"
+          id="splitItemName"
+          class="form-control name-input"
+          maxlength="150"
+          placeholder="消費項目"
+        >
+        <input
+          type="number"
+          id="splitItemPrice"
+          class="form-control price-input"
+          min="0.01"
+          step="any"
+          placeholder="總金額"
+        >
+      </div>
+
+      <button class="btn-submit" onclick="addSplitItem()">＋ 加入分帳清單</button>
+    </section>
+
+    <section class="card" id="splitItemsCard" style="display:none">
+      <div class="card-title">
+        <div class="title-left">
+          <span class="title-icon">📝</span>
+          消費與分攤設定
+        </div>
+      </div>
+
+      <p class="section-caption">點擊成員按鈕即可切換是否參與該筆消費，金額將平均分攤。</p>
+
       <div id="splitItemsContainer"></div>
-    </div>
+    </section>
 
-    <!-- 5. 結算結果 -->
-    <div class="card" id="splitResultCard" style="display:none;">
-      <div class="card-title">💰 個人應付金額結算</div>
+    <section class="card" id="splitResultCard" style="display:none">
+      <div class="card-title">
+        <div class="title-left">
+          <span class="title-icon">💰</span>
+          個人分帳結算
+        </div>
+      </div>
+
       <div id="splitResultList"></div>
-      <button class="btn-submit btn-secondary" style="margin-top:12px;" onclick="importSplitToDaily()">📥 將分帳結果寫入「每日記帳」</button>
-    </div>
 
-  </div>
+      <button
+        class="btn-submit btn-secondary"
+        style="margin-top:18px"
+        onclick="importSplitToDaily()"
+      >📥 將結算結果寫入每日記帳</button>
+    </section>
 
+  </section>
+</main>
+
+<div class="modal" id="imageModal" role="dialog" aria-label="收據照片預覽">
+  <img id="modalImg" src="" alt="收據照片預覽">
 </div>
 
-<!-- 照片放大 Modal -->
-<div class="modal" id="imageModal" onclick="this.style.display='none'">
-  <img id="modalImg" src="" alt="預覽照片">
-</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-  let expenses = JSON.parse(localStorage.getItem('travel_expenses')) || [];
-  let settings = JSON.parse(localStorage.getItem('travel_settings')) || { currency: 'JPY', rate: 0.21 };
-  let members = JSON.parse(localStorage.getItem('split_members')) || ['我', '小明', '小華'];
-  let splitItems = []; // { id, name, price, assignedMembers: [] }
-  let selectedDate = new Date().toISOString().split('T')[0];
+"use strict";
 
-  window.onload = function() {
-    document.getElementById('inputDate').value = selectedDate;
-    document.getElementById('currencySymbol').value = settings.currency;
-    document.getElementById('exchangeRate').value = settings.rate;
+/* =========================
+   資料與初始化
+========================= */
+
+function loadStoredJSON(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : JSON.parse(value);
+  } catch (error) {
+    console.warn("讀取資料失敗：", key, error);
+    return fallback;
+  }
+}
+
+let expenses = loadStoredJSON("travel_expenses", []);
+let settings = loadStoredJSON("travel_settings", {
+  currency: "JPY",
+  rate: 0.21
+});
+let members = loadStoredJSON("split_members", ["我", "小明", "小華"]);
+let splitItems = [];
+
+let selectedDate = getLocalDate();
+let toastTimer = null;
+
+function getLocalDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function saveExpenses() {
+  localStorage.setItem("travel_expenses", JSON.stringify(expenses));
+}
+
+function saveSettings() {
+  localStorage.setItem("travel_settings", JSON.stringify(settings));
+}
+
+function saveMembers() {
+  localStorage.setItem("split_members", JSON.stringify(members));
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  })[char]);
+}
+
+function formatNumber(value, maximumFractionDigits = 2) {
+  return Number(value || 0).toLocaleString("zh-TW", {
+    maximumFractionDigits
+  });
+}
+
+function formatTWD(value) {
+  return "NT$ " + formatNumber(Math.round(value));
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+}
+
+function validRate(value) {
+  return Number.isFinite(value) && value > 0;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("inputDate").value = selectedDate;
+  document.getElementById("currencySymbol").value = settings.currency;
+  document.getElementById("exchangeRate").value = settings.rate;
+
+  document.getElementById("imageModal").addEventListener("click", closeModal);
+
+  document.addEventListener("keydown", event => {
+    if (event.key === "Escape") closeModal();
+  });
+
+  document.getElementById("newMemberInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") addMember();
+  });
+
+  document.getElementById("splitItemPrice").addEventListener("keydown", event => {
+    if (event.key === "Enter") addSplitItem();
+  });
+
+  document.getElementById("inputAmount").addEventListener("keydown", event => {
+    if (event.key === "Enter") addExpense();
+  });
+
+  renderDaily();
+  renderMembers();
+});
+
+/* =========================
+   分頁切換
+========================= */
+
+function switchTab(tabName) {
+  document.querySelectorAll(".tab-btn").forEach(button => {
+    const active = button.dataset.tab === tabName;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+  });
+
+  document.querySelectorAll(".tab-content").forEach(section => {
+    section.classList.toggle("active", section.id === "tab-" + tabName);
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* =========================
+   幣別與匯率
+========================= */
+
+function updateSettings() {
+  const currencyInput = document.getElementById("currencySymbol");
+  const rateInput = document.getElementById("exchangeRate");
+
+  const currency = currencyInput.value.trim().toUpperCase();
+  const rate = Number(rateInput.value);
+
+  if (!currency) {
+    showToast("請輸入幣別，例如 JPY、USD 或 KRW");
+    currencyInput.focus();
+    return;
+  }
+
+  if (!validRate(rate)) {
+    showToast("匯率必須大於 0");
+    rateInput.focus();
+    return;
+  }
+
+  settings = { currency, rate };
+  saveSettings();
+  renderDaily();
+  calculateSplit();
+
+  showToast("幣別與匯率已更新");
+}
+
+/* =========================
+   圖片壓縮
+========================= */
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(null);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      reject(new Error("請選擇圖片檔案"));
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onerror = () => reject(new Error("圖片讀取失敗"));
+
+    reader.onload = event => {
+      const img = new Image();
+
+      img.onerror = () => reject(new Error("圖片格式無法讀取"));
+
+      img.onload = () => {
+        const maxW = 900;
+        const maxH = 900;
+        const scale = Math.min(1, maxW / img.width, maxH / img.height);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+
+        const ctx = canvas.getContext("2d");
+
+        if (!ctx) {
+          reject(new Error("無法處理圖片"));
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.72));
+      };
+
+      img.src = event.target.result;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+/* =========================
+   每日記帳
+========================= */
+
+async function addExpense() {
+  const date = document.getElementById("inputDate").value;
+  const title = document.getElementById("inputTitle").value.trim();
+  const amount = Number(document.getElementById("inputAmount").value);
+  const photoInput = document.getElementById("inputPhoto");
+  const file = photoInput.files?.[0] || null;
+
+  if (!date || !title || !Number.isFinite(amount) || amount <= 0) {
+    showToast("請填寫日期、消費項目與有效金額");
+    return;
+  }
+
+  if (file && file.size > 15 * 1024 * 1024) {
+    showToast("照片不可超過 15 MB");
+    return;
+  }
+
+  if (!validRate(Number(settings.rate))) {
+    showToast("請先設定正確匯率");
+    return;
+  }
+
+  try {
+    const photo = await compressImage(file);
+
+    expenses.push({
+      id: Date.now() + Math.random(),
+      date,
+      title,
+      amount,
+      rate: Number(settings.rate),
+      currency: settings.currency,
+      photo
+    });
+
+    saveExpenses();
+
+    document.getElementById("inputTitle").value = "";
+    document.getElementById("inputAmount").value = "";
+    photoInput.value = "";
+
+    selectedDate = date;
     renderDaily();
-    renderMembers();
+    showToast("記帳成功！");
+  } catch (error) {
+    showToast(error.message || "照片處理失敗，請再試一次");
+  }
+}
+
+function deleteExpense(id) {
+  if (!confirm("確定要刪除這筆記帳嗎？")) return;
+
+  expenses = expenses.filter(item => item.id !== id);
+  saveExpenses();
+  renderDaily();
+  showToast("已刪除這筆記帳");
+}
+
+function renderDaily() {
+  document.querySelectorAll(".curr-name").forEach(element => {
+    element.textContent = settings.currency;
+  });
+
+  document.getElementById("summaryCurrency").textContent =
+    settings.currency + " · 外幣";
+
+  const dates = [...new Set(expenses.map(item => item.date))]
+    .filter(Boolean)
+    .sort();
+
+  if (selectedDate !== "ALL" && !dates.includes(selectedDate)) {
+    dates.push(selectedDate);
+    dates.sort();
+  }
+
+  const selector = document.getElementById("daySelector");
+  selector.innerHTML = "";
+
+  const allButton = document.createElement("button");
+  allButton.className = "day-btn" + (selectedDate === "ALL" ? " active" : "");
+  allButton.textContent = "全部明細";
+  allButton.onclick = () => {
+    selectedDate = "ALL";
+    renderDaily();
+  };
+  selector.appendChild(allButton);
+
+  dates.forEach(date => {
+    const button = document.createElement("button");
+    button.className = "day-btn" + (selectedDate === date ? " active" : "");
+    button.textContent = date.slice(5).replace("-", "/");
+    button.onclick = () => {
+      selectedDate = date;
+      document.getElementById("inputDate").value = date;
+      renderDaily();
+    };
+    selector.appendChild(button);
+  });
+
+  const filtered = selectedDate === "ALL"
+    ? expenses
+    : expenses.filter(item => item.date === selectedDate);
+
+  const foreignTotal = filtered.reduce(
+    (sum, item) => sum + Number(item.amount || 0), 0
+  );
+
+  const twdTotal = filtered.reduce(
+    (sum, item) => sum + Math.round(
+      Number(item.amount || 0) * Number(item.rate || settings.rate)
+    ), 0
+  );
+
+  const grandTotal = expenses.reduce(
+    (sum, item) => sum + Math.round(
+      Number(item.amount || 0) * Number(item.rate || settings.rate)
+    ), 0
+  );
+
+  document.getElementById("summaryHeading").textContent =
+    selectedDate === "ALL"
+      ? "全部消費總額"
+      : selectedDate === getLocalDate()
+        ? "今日消費總額"
+        : selectedDate + " 消費總額";
+
+  document.getElementById("dayTotalForeign").textContent =
+    formatNumber(foreignTotal);
+
+  document.getElementById("dayTotalTWD").textContent =
+    formatTWD(twdTotal);
+
+  document.getElementById("grandTotalTWD").textContent =
+    formatTWD(grandTotal);
+
+  document.getElementById("expenseCount").textContent =
+    filtered.length + " 筆紀錄";
+
+  const list = document.getElementById("itemList");
+  list.innerHTML = "";
+
+  if (filtered.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🧳</div>
+        <div>還沒有消費紀錄</div>
+        <div>新增第一筆，開始記錄旅途花費吧！</div>
+      </div>
+    `;
+    return;
+  }
+
+  [...filtered].reverse().forEach(item => {
+    const twdValue = Math.round(
+      Number(item.amount) * Number(item.rate || settings.rate)
+    );
+
+    const element = document.createElement("article");
+    element.className = "expense-item";
+
+    const photoHTML = item.photo
+      ? `<img src="${item.photo}" class="item-thumb" alt="消費照片" loading="lazy">`
+      : `<div class="item-icon">🧾</div>`;
+
+    element.innerHTML = `
+      ${photoHTML}
+      <div class="item-info">
+        <div class="item-title">${escapeHtml(item.title)}</div>
+        <div class="item-meta">${escapeHtml(item.date)}</div>
+      </div>
+      <div class="item-amount">
+        <div class="amount-foreign">
+          ${formatNumber(item.amount)} ${escapeHtml(item.currency || settings.currency)}
+        </div>
+        <div class="amount-twd">≈ ${formatTWD(twdValue)}</div>
+      </div>
+      <button class="btn-delete" aria-label="刪除這筆記帳">×</button>
+    `;
+
+    const thumb = element.querySelector(".item-thumb");
+    if (thumb) {
+      thumb.addEventListener("click", () => showModal(item.photo));
+    }
+
+    element.querySelector(".btn-delete").addEventListener("click", () => {
+      deleteExpense(item.id);
+    });
+
+    list.appendChild(element);
+  });
+}
+
+/* =========================
+   成員管理
+========================= */
+
+function renderMembers() {
+  saveMembers();
+
+  const container = document.getElementById("memberTagsList");
+  container.innerHTML = "";
+
+  document.getElementById("memberCount").textContent =
+    members.length + " 位成員";
+
+  members.forEach((member, index) => {
+    const tag = document.createElement("div");
+    tag.className = "member-tag";
+    tag.innerHTML = `
+      <span>${escapeHtml(member)}</span>
+      <button aria-label="移除 ${escapeHtml(member)}">×</button>
+    `;
+
+    tag.querySelector("button").addEventListener("click", () => {
+      removeMember(index);
+    });
+
+    container.appendChild(tag);
+  });
+
+  renderSplitItems();
+}
+
+function addMember() {
+  const input = document.getElementById("newMemberInput");
+  const name = input.value.trim();
+
+  if (!name) {
+    showToast("請輸入成員名稱");
+    return;
+  }
+
+  if (members.includes(name)) {
+    showToast("這位成員已經存在");
+    return;
+  }
+
+  members.push(name);
+  input.value = "";
+  renderMembers();
+  showToast("已新增成員：" + name);
+}
+
+function removeMember(index) {
+  const name = members[index];
+
+  if (!confirm(`確定要移除成員「${name}」嗎？`)) return;
+
+  members.splice(index, 1);
+
+  // 同時移除其分帳資格，避免殘留資料。
+  splitItems.forEach(item => {
+    item.assignedMembers = item.assignedMembers.filter(
+      member => member !== name
+    );
+  });
+
+  renderMembers();
+  showToast("已移除成員");
+}
+
+/* =========================
+   收據文字匯入
+========================= */
+
+function parseAndImportText() {
+  const textarea = document.getElementById("pasteTextarea");
+  const text = textarea.value.trim();
+
+  if (!text) {
+    showToast("請先貼上收據文字");
+    return;
+  }
+
+  const lines = text.split(/\r?\n/);
+  let importedCount = 0;
+  const failedLines = [];
+
+  lines.forEach((line, index) => {
+    const cleanLine = line.trim();
+    if (!cleanLine) return;
+
+    /*
+      支援：
+      拉麵 1200
+      拉麵：1200
+      拉麵: 1,200
+      拉麵 = 1200
+      拉麵 / 1200
+      1200 拉麵
+    */
+
+    const match = cleanLine.match(
+      /^(.+?)\s*(?::|：|=|\/|\t|\s)\s*([0-9][0-9,]*(?:\.[0-9]+)?)\s*(?:元|円|日圓|日元)?$/i
+    );
+
+    const reverseMatch = cleanLine.match(
+      /^([0-9][0-9,]*(?:\.[0-9]+)?)\s+(.+)$/
+    );
+
+    let name = "";
+    let rawPrice = "";
+
+    if (match) {
+      name = match[1].trim();
+      rawPrice = match[2];
+    } else if (reverseMatch) {
+      rawPrice = reverseMatch[1];
+      name = reverseMatch[2].trim();
+    }
+
+    const price = Number(rawPrice.replace(/,/g, ""));
+
+    if (name && Number.isFinite(price) && price > 0) {
+      splitItems.push({
+        id: Date.now() + Math.random(),
+        name,
+        price,
+        assignedMembers: [...members]
+      });
+
+      importedCount++;
+    } else {
+      failedLines.push(index + 1);
+    }
+  });
+
+  if (importedCount > 0) {
+    textarea.value = "";
+    renderSplitItems();
+
+    if (failedLines.length > 0) {
+      showToast(`成功匯入 ${importedCount} 筆，另有 ${failedLines.length} 行未辨識`);
+    } else {
+      showToast(`成功匯入 ${importedCount} 筆消費！`);
+    }
+  } else {
+    showToast("沒有可匯入的項目，請檢查品名與金額格式");
+  }
+}
+
+/* =========================
+   分帳項目管理
+========================= */
+
+function addSplitItem() {
+  const nameInput = document.getElementById("splitItemName");
+  const priceInput = document.getElementById("splitItemPrice");
+
+  const name = nameInput.value.trim() || "未命名消費";
+  const price = Number(priceInput.value);
+
+  if (!Number.isFinite(price) || price <= 0) {
+    showToast("請輸入有效的消費金額");
+    priceInput.focus();
+    return;
+  }
+
+  splitItems.push({
+    id: Date.now() + Math.random(),
+    name,
+    price,
+    assignedMembers: [...members]
+  });
+
+  nameInput.value = "";
+  priceInput.value = "";
+
+  renderSplitItems();
+  showToast("已加入分帳清單");
+}
+
+function updateSplitItemName(id, value) {
+  const item = splitItems.find(entry => entry.id === id);
+  if (item) item.name = value;
+}
+
+function updateSplitItemPrice(id, value) {
+  const item = splitItems.find(entry => entry.id === id);
+  if (!item) return;
+
+  item.price = Number(value);
+
+  if (!Number.isFinite(item.price) || item.price < 0) {
+    item.price = 0;
+  }
+
+  calculateSplit();
+}
+
+function removeSplitItem(id) {
+  splitItems = splitItems.filter(item => item.id !== id);
+  renderSplitItems();
+  showToast("已移除消費項目");
+}
+
+function toggleMemberAssign(itemId, memberName) {
+  const item = splitItems.find(entry => entry.id === itemId);
+  if (!item) return;
+
+  if (item.assignedMembers.includes(memberName)) {
+    item.assignedMembers = item.assignedMembers.filter(
+      member => member !== memberName
+    );
+  } else {
+    item.assignedMembers.push(memberName);
+  }
+
+  renderSplitItems();
+}
+
+function renderSplitItems() {
+  const card = document.getElementById("splitItemsCard");
+  const container = document.getElementById("splitItemsContainer");
+
+  if (splitItems.length === 0) {
+    card.style.display = "none";
+    document.getElementById("splitResultCard").style.display = "none";
+    return;
+  }
+
+  card.style.display = "block";
+  container.innerHTML = "";
+
+  splitItems.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "split-item-row";
+
+    row.innerHTML = `
+      <div class="split-item-header">
+        <input
+          type="text"
+          class="form-control name-control"
+          value="${escapeHtml(item.name)}"
+          aria-label="消費項目名稱"
+          maxlength="150"
+        >
+        <input
+          type="number"
+          class="form-control price-control"
+          value="${Number(item.price)}"
+          min="0"
+          step="any"
+          aria-label="消費金額"
+        >
+        <button class="btn-delete" aria-label="刪除消費項目">×</button>
+      </div>
+      <div class="member-check-group"></div>
+    `;
+
+    row.querySelector(".name-control").addEventListener("change", event => {
+      updateSplitItemName(item.id, event.target.value);
+    });
+
+    row.querySelector(".price-control").addEventListener("change", event => {
+      updateSplitItemPrice(item.id, event.target.value);
+    });
+
+    row.querySelector(".btn-delete").addEventListener("click", () => {
+      removeSplitItem(item.id);
+    });
+
+    const group = row.querySelector(".member-check-group");
+
+    members.forEach(member => {
+      const button = document.createElement("button");
+      const selected = item.assignedMembers.includes(member);
+
+      button.type = "button";
+      button.className = "member-check-btn" + (selected ? " selected" : "");
+      button.textContent = (selected ? "✓ " : "") + member;
+      button.setAttribute("aria-pressed", String(selected));
+
+      button.addEventListener("click", () => {
+        toggleMemberAssign(item.id, member);
+      });
+
+      group.appendChild(button);
+    });
+
+    container.appendChild(row);
+  });
+
+  calculateSplit();
+}
+
+/* =========================
+   分帳計算
+========================= */
+
+function calculateSplit() {
+  const card = document.getElementById("splitResultCard");
+  const container = document.getElementById("splitResultList");
+
+  if (splitItems.length === 0) {
+    card.style.display = "none";
+    return;
+  }
+
+  card.style.display = "block";
+
+  const totals = Object.fromEntries(members.map(member => [member, 0]));
+  let grandTotal = 0;
+
+  splitItems.forEach(item => {
+    const price = Number(item.price);
+
+    if (!Number.isFinite(price) || price < 0) return;
+
+    grandTotal += price;
+
+    const assigned = item.assignedMembers.filter(
+      member => Object.prototype.hasOwnProperty.call(totals, member)
+    );
+
+    if (assigned.length === 0) return;
+
+    const share = price / assigned.length;
+
+    assigned.forEach(member => {
+      totals[member] += share;
+    });
+  });
+
+  container.innerHTML = "";
+
+  members.forEach(member => {
+    const amount = Math.round((totals[member] + Number.EPSILON) * 100) / 100;
+    const twd = Math.round(amount * Number(settings.rate));
+
+    const row = document.createElement("div");
+    row.className = "split-result-row";
+
+    row.innerHTML = `
+      <span class="person-name">👤 ${escapeHtml(member)}</span>
+      <span class="person-total">
+        ${formatNumber(amount)} ${escapeHtml(settings.currency)}
+        <small>約 ${formatTWD(twd)}</small>
+      </span>
+    `;
+
+    container.appendChild(row);
+  });
+
+  const totalTwd = Math.round(grandTotal * Number(settings.rate));
+  const unassignedCount = splitItems.filter(
+    item => !item.assignedMembers.some(member => members.includes(member))
+  ).length;
+
+  const totalRow = document.createElement("div");
+  totalRow.className = "split-result-row total-row";
+
+  totalRow.innerHTML = `
+    <span>總消費金額</span>
+    <span class="person-total">
+      ${formatNumber(grandTotal)} ${escapeHtml(settings.currency)}
+      <small>約 ${formatTWD(totalTwd)}</small>
+    </span>
+  `;
+
+  container.appendChild(totalRow);
+
+  if (unassignedCount > 0) {
+    const warning = document.createElement("div");
+    warning.style.cssText =
+      "margin-top:12px;padding:12px;border-radius:10px;background:#fff6e8;color:#99651c;font-size:12px;line-height:1.7";
+    warning.textContent =
+      `提醒：有 ${unassignedCount} 筆消費尚未選擇分攤成員，這些金額不會計入任何人的應付金額。`;
+
+    container.appendChild(warning);
+  }
+}
+
+/* =========================
+   匯入分帳結果至記帳
+========================= */
+
+function importSplitToDaily() {
+  if (splitItems.length === 0) {
+    showToast("目前沒有分帳項目");
+    return;
+  }
+
+  const today = getLocalDate();
+  const totals = Object.fromEntries(members.map(member => [member, 0]));
+
+  splitItems.forEach(item => {
+    const price = Number(item.price);
+
+    if (!Number.isFinite(price) || price <= 0) return;
+
+    const assigned = item.assignedMembers.filter(
+      member => Object.prototype.hasOwnProperty.call(totals, member)
+    );
+
+    if (assigned.length === 0) return;
+
+    const share = price / assigned.length;
+
+    assigned.forEach(member => {
+      totals[member] += share;
+    });
+  });
+
+  const records = members
+    .filter(member => totals[member] > 0)
+    .map(member => ({
+      id: Date.now() + Math.random(),
+      date: today,
+      title: `[分帳] ${member} 的分攤費用`,
+      amount: Math.round((totals[member] + Number.EPSILON) * 100) / 100,
+      rate: Number(settings.rate),
+      currency: settings.currency,
+      photo: null
+    }));
+
+  if (records.length === 0) {
+    showToast("沒有可匯入的分帳金額");
+    return;
+  }
+
+  if (!confirm(
+    `確定將 ${records.length} 位成員的分攤金額寫入每日記帳嗎？\n日期：${today}\n注意：每位成員的分攤金額會各自新增一筆紀錄。`
+  )) {
+    return;
+  }
+
+  expenses.push(...records);
+  saveExpenses();
+
+  selectedDate = today;
+  document.getElementById("inputDate").value = today;
+
+  renderDaily();
+  switchTab("daily");
+
+  showToast(`成功匯入 ${records.length} 位成員的分帳金額`);
+}
+
+/* =========================
+   照片預覽
+========================= */
+
+function showModal(src) {
+  if (!src) return;
+
+  document.getElementById("modalImg").src = src;
+  document.getElementById("imageModal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("imageModal").style.display = "none";
+  document.getElementById("modalImg").src = "";
+}
+
+/* =========================
+   資料備份與還原
+========================= */
+
+function exportData() {
+  const data = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    expenses,
+    settings,
+    members
   };
 
-  function switchTab(tabName) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-    
-    if (tabName === 'daily') {
-      document.querySelectorAll('.tab-btn')[0].classList.add('active');
-      document.getElementById('tab-daily').classList.add('active');
-    } else {
-      document.querySelectorAll('.tab-btn')[1].classList.add('active');
-      document.getElementById('tab-split').classList.add('active');
-    }
-  }
+  const blob = new Blob(
+    [JSON.stringify(data, null, 2)],
+    { type: "application/json;charset=utf-8" }
+  );
 
-  function updateSettings() {
-    settings.currency = document.getElementById('currencySymbol').value.toUpperCase() || 'FOREIGN';
-    settings.rate = parseFloat(document.getElementById('exchangeRate').value) || 1;
-    localStorage.setItem('travel_settings', JSON.stringify(settings));
-    renderDaily();
-    calculateSplit();
-  }
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
 
-  // ================= 每日記帳邏輯 =================
-  function compressImage(file, callback) {
+  anchor.href = url;
+  anchor.download = `travel_backup_${getLocalDate()}.json`;
+
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  showToast("備份檔案已開始下載");
+}
+
+function importData() {
+  const input = document.createElement("input");
+
+  input.type = "file";
+  input.accept = ".json,application/json";
+
+  input.onchange = event => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = function(e) {
-      const img = new Image();
-      img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const maxW = 600;
-        const scale = maxW / img.width;
-        canvas.width = (img.width > maxW) ? maxW : img.width;
-        canvas.height = (img.width > maxW) ? img.height * scale : img.height;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        callback(canvas.toDataURL('image/jpeg', 0.6));
-      };
-      img.onerror = () => callback(null);
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
 
-  function addExpense() {
-    const date = document.getElementById('inputDate').value;
-    const title = document.getElementById('inputTitle').value.trim();
-    const amount = parseFloat(document.getElementById('inputAmount').value);
-    const photoInput = document.getElementById('inputPhoto');
+    reader.onerror = () => showToast("檔案讀取失敗");
 
-    if (!date || !title || isNaN(amount) || amount <= 0) {
-      alert('請填寫完整的日期、內容與有效金額！');
-      return;
-    }
+    reader.onload = () => {
+      try {
+        const imported = JSON.parse(reader.result);
 
-    const saveRecord = (photoData) => {
-      expenses.push({
-        id: Date.now(),
-        date: date,
-        title: title,
-        amount: amount,
-        rate: settings.rate,
-        currency: settings.currency,
-        photo: photoData || null
-      });
-      localStorage.setItem('travel_expenses', JSON.stringify(expenses));
-      
-      document.getElementById('inputTitle').value = '';
-      document.getElementById('inputAmount').value = '';
-      document.getElementById('inputPhoto').value = '';
-      selectedDate = date;
-      renderDaily();
-    };
-
-    if (photoInput.files && photoInput.files[0]) {
-      compressImage(photoInput.files[0], saveRecord);
-    } else {
-      saveRecord(null);
-    }
-  }
-
-  function deleteExpense(id) {
-    if (confirm('確定要刪除這筆記帳嗎？')) {
-      expenses = expenses.filter(item => item.id !== id);
-      localStorage.setItem('travel_expenses', JSON.stringify(expenses));
-      renderDaily();
-    }
-  }
-
-  function renderDaily() {
-    document.querySelectorAll('.curr-name').forEach(el => el.textContent = settings.currency);
-
-    let dates = Array.from(new Set(expenses.map(e => e.date))).sort();
-    if (!dates.includes(selectedDate)) dates.push(selectedDate);
-    dates.sort();
-
-    const daySelector = document.getElementById('daySelector');
-    daySelector.innerHTML = '';
-    
-    const allBtn = document.createElement('button');
-    allBtn.className = `day-btn ${selectedDate === 'ALL' ? 'active' : ''}`;
-    allBtn.textContent = '全部明細';
-    allBtn.onclick = () => { selectedDate = 'ALL'; renderDaily(); };
-    daySelector.appendChild(allBtn);
-
-    dates.forEach(d => {
-      const btn = document.createElement('button');
-      btn.className = `day-btn ${selectedDate === d ? 'active' : ''}`;
-      btn.textContent = d.slice(5);
-      btn.onclick = () => { selectedDate = d; document.getElementById('inputDate').value = d; renderDaily(); };
-      daySelector.appendChild(btn);
-    });
-
-    const filteredExpenses = selectedDate === 'ALL' ? expenses : expenses.filter(e => e.date === selectedDate);
-
-    let dayForeignTotal = 0, dayTwdTotal = 0, grandTwdTotal = 0;
-    expenses.forEach(e => grandTwdTotal += Math.round(e.amount * e.rate));
-    filteredExpenses.forEach(e => {
-      dayForeignTotal += e.amount;
-      dayTwdTotal += Math.round(e.amount * e.rate);
-    });
-
-    document.getElementById('dayTotalForeign').textContent = dayForeignTotal.toLocaleString();
-    document.getElementById('dayTotalTWD').textContent = `≈ NT$ ${dayTwdTotal.toLocaleString()}`;
-    document.getElementById('grandTotalTWD').textContent = `NT$ ${grandTwdTotal.toLocaleString()}`;
-
-    const itemList = document.getElementById('itemList');
-    itemList.innerHTML = '';
-
-    if (filteredExpenses.length === 0) {
-      itemList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">尚無記帳資料</div>';
-      return;
-    }
-
-    [...filteredExpenses].reverse().forEach(item => {
-      const twdVal = Math.round(item.amount * item.rate);
-      const el = document.createElement('div');
-      el.className = 'expense-item';
-      el.innerHTML = `
-        ${item.photo ? `<img src="${item.photo}" class="item-thumb" onclick="showModal('${item.photo}')">` : ''}
-        <div class="item-info">
-          <div class="item-title">${escapeHtml(item.title)}</div>
-          <div class="item-meta">${item.date}</div>
-        </div>
-        <div class="item-amount">
-          <div class="amount-foreign">${item.amount.toLocaleString()} ${item.currency}</div>
-          <div class="amount-twd">≈ NT$ ${twdVal.toLocaleString()}</div>
-        </div>
-        <button class="btn-delete" onclick="deleteExpense(${item.id})">×</button>
-      `;
-      itemList.appendChild(el);
-    });
-  }
-
-  // ================= 分帳邏輯 =================
-  function renderMembers() {
-    localStorage.setItem('split_members', JSON.stringify(members));
-    const container = document.getElementById('memberTagsList');
-    container.innerHTML = '';
-    members.forEach((m, idx) => {
-      const tag = document.createElement('div');
-      tag.className = 'member-tag';
-      tag.innerHTML = `${m} <button onclick="removeMember(${idx})">×</button>`;
-      container.appendChild(tag);
-    });
-    renderSplitItems();
-  }
-
-  function addMember() {
-    const input = document.getElementById('newMemberInput');
-    const name = input.value.trim();
-    if (name && !members.includes(name)) {
-      members.push(name);
-      input.value = '';
-      renderMembers();
-    }
-  }
-
-  function removeMember(idx) {
-    members.splice(idx, 1);
-    renderMembers();
-  }
-
-  // 解析文字並自動產生項目
-  function parseAndImportText() {
-    const text = document.getElementById('pasteTextarea').value.trim();
-    if (!text) {
-      alert('請先貼入文字！');
-      return;
-    }
-
-    const lines = text.split('\n');
-    let importedCount = 0;
-
-    lines.forEach((line, idx) => {
-      const cleanLine = line.trim();
-      if (!cleanLine) return;
-
-      // 使用正則表達式尋找最後一個出現的數字作為金額
-      const match = cleanLine.match(/^(.*?)\s*[:=\s/]\s*([\d,.]+)\s*$/) \vert{}\vert{} cleanLine.match(/^(.*?)\s+([\d,.]+)$/);
-      
-      if (match) {
-        const name = match[1].trim() || '項目';
-        const price = parseFloat(match[2].replace(/,/g, ''));
-        if (!isNaN(price) && price > 0) {
-          splitItems.push({
-            id: Date.now() + idx,
-            name: name,
-            price: price,
-            assignedMembers: [...members]
-          });
-          importedCount++;
+        if (
+          !imported ||
+          !Array.isArray(imported.expenses) ||
+          !imported.expenses.every(item =>
+            item &&
+            typeof item.date === "string" &&
+            typeof item.title === "string" &&
+            Number.isFinite(Number(item.amount)) &&
+            Number(item.amount) >= 0
+          )
+        ) {
+          throw new Error("備份檔案格式不正確");
         }
-      }
-    });
 
-    if (importedCount > 0) {
-      document.getElementById('pasteTextarea').value = '';
-      renderSplitItems();
-      alert(`✅ 成功匯入 ${importedCount} 個項目！`);
-    } else {
-      alert('無法辨識文字格式，請確保每行包含「品名」與「金額」（例：拉麵 1200）');
-    }
-  }
-
-  function addSplitItem() {
-    const nameInput = document.getElementById('splitItemName');
-    const priceInput = document.getElementById('splitItemPrice');
-    const name = nameInput.value.trim() || '未命名消費';
-    const price = parseFloat(priceInput.value);
-
-    if (isNaN(price) || price <= 0) {
-      alert('請輸入有效金額！');
-      return;
-    }
-
-    splitItems.push({
-      id: Date.now(),
-      name: name,
-      price: price,
-      assignedMembers: [...members]
-    });
-
-    nameInput.value = '';
-    priceInput.value = '';
-    renderSplitItems();
-  }
-
-  function renderSplitItems() {
-    const card = document.getElementById('splitItemsCard');
-    const container = document.getElementById('splitItemsContainer');
-    
-    if (splitItems.length === 0) {
-      card.style.display = 'none';
-      document.getElementById('splitResultCard').style.display = 'none';
-      return;
-    }
-
-    card.style.display = 'block';
-    container.innerHTML = '';
-
-    splitItems.forEach((item) => {
-      const row = document.createElement('div');
-      row.className = 'split-item-row';
-      row.innerHTML = `
-        <div class="split-item-header">
-          <input type="text" class="form-control" value="${escapeHtml(item.name)}" style="flex:2; font-weight:bold;" onchange="updateSplitItemName(${item.id}, this.value)">
-          <input type="number" class="form-control" value="${item.price}" style="flex:1; text-align:right;" onchange="updateSplitItemPrice(${item.id}, this.value)">
-          <button style="background:none; border:none; color:var(--danger); font-size:1.2em; cursor:pointer;" onclick="removeSplitItem(${item.id})">×</button>
-        </div>
-        <div class="member-check-group">
-          ${members.map(m => {
-            const isSelected = item.assignedMembers.includes(m);
-            return `<div class="member-check-btn ${isSelected ? 'selected' : ''}" onclick="toggleMemberAssign(${item.id}, '${m}')">${m}</div>`;
-          }).join('')}
-        </div>
-      `;
-      container.appendChild(row);
-    });
-
-    calculateSplit();
-  }
-
-  function updateSplitItemName(id, val) {
-    const item = splitItems.find(i => i.id === id);
-    if (item) item.name = val;
-  }
-
-  function updateSplitItemPrice(id, val) {
-    const item = splitItems.find(i => i.id === id);
-    if (item) item.price = parseFloat(val) || 0;
-    calculateSplit();
-  }
-
-  function removeSplitItem(id) {
-    splitItems = splitItems.filter(i => i.id !== id);
-    renderSplitItems();
-  }
-
-  function toggleMemberAssign(itemId, memberName) {
-    const item = splitItems.find(i => i.id === itemId);
-    if (!item) return;
-
-    if (item.assignedMembers.includes(memberName)) {
-      item.assignedMembers = item.assignedMembers.filter(m => m !== memberName);
-    } else {
-      item.assignedMembers.push(memberName);
-    }
-    renderSplitItems();
-  }
-
-  function calculateSplit() {
-    const totals = {};
-    members.forEach(m => totals[m] = 0);
-    let grandTotalForeign = 0;
-
-    splitItems.forEach(item => {
-      grandTotalForeign += item.price;
-      if (item.assignedMembers.length > 0) {
-        const splitPrice = item.price / item.assignedMembers.length;
-        item.assignedMembers.forEach(m => {
-          if (totals[m] !== undefined) totals[m] += splitPrice;
-        });
-      }
-    });
-
-    const card = document.getElementById('splitResultCard');
-    const container = document.getElementById('splitResultList');
-
-    if (splitItems.length === 0) {
-      card.style.display = 'none';
-      return;
-    }
-
-    card.style.display = 'block';
-    container.innerHTML = '';
-
-    members.forEach(m => {
-      const foreignVal = Math.round(totals[m] * 100) / 100;
-      const twdVal = Math.round(foreignVal * settings.rate);
-      const row = document.createElement('div');
-      row.className = 'split-result-row';
-      row.innerHTML = `
-        <span>👤 ${m}</span>
-        <span>${foreignVal.toLocaleString()} ${settings.currency} (≈ NT$ ${twdVal.toLocaleString()})</span>
-      `;
-      container.appendChild(row);
-    });
-
-    const grandTwd = Math.round(grandTotalForeign * settings.rate);
-    const totalRow = document.createElement('div');
-    totalRow.className = 'split-result-row';
-    totalRow.style.marginTop = '8px';
-    totalRow.style.paddingTop = '8px';
-    totalRow.style.borderTop = '2px solid var(--border)';
-    totalRow.style.fontWeight = 'bold';
-    totalRow.innerHTML = `
-      <span>總計消費金額</span>
-      <span>${grandTotalForeign.toLocaleString()} ${settings.currency} (≈ NT$ ${grandTwd.toLocaleString()})</span>
-    `;
-    container.appendChild(totalRow);
-  }
-
-  function importSplitToDaily() {
-    const today = new Date().toISOString().split('T')[0];
-    let importedCount = 0;
-
-    members.forEach(m => {
-      let personTotal = 0;
-      splitItems.forEach(item => {
-        if (item.assignedMembers.includes(m)) {
-          personTotal += item.price / item.assignedMembers.length;
+        if (!confirm(
+          "匯入備份將取代目前的記帳資料、幣別設定及成員名單，是否繼續？\n建議先匯出目前資料作為備份。"
+        )) {
+          return;
         }
-      });
 
-      if (personTotal > 0) {
-        expenses.push({
-          id: Date.now() + Math.random(),
-          date: today,
-          title: `[分帳] ${m} 的分攤費用`,
-          amount: Math.round(personTotal * 100) / 100,
-          rate: settings.rate,
-          currency: settings.currency,
-          photo: null
-        });
-        importedCount++;
-      }
-    });
+        expenses = imported.expenses;
 
-    localStorage.setItem('travel_expenses', JSON.stringify(expenses));
-    renderDaily();
-    alert(`✅ 已將 ${importedCount} 位成員的分帳金額寫入每日記帳！`);
-    switchTab('daily');
-  }
-
-  function showModal(src) {
-    document.getElementById('modalImg').src = src;
-    document.getElementById('imageModal').style.display = 'flex';
-  }
-
-  function escapeHtml(text) {
-    return text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
-  }
-
-  function exportData() {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ expenses, settings, members }));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `travel_backup_${new Date().toISOString().split('T')[0]}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  }
-
-  function importData() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'application/json';
-    input.onchange = e => {
-      const file = e.target.files[0];
-      const reader = new FileReader();
-      reader.onload = event => {
-        try {
-          const imported = JSON.parse(event.target.result);
-          if (imported.expenses) {
-            expenses = imported.expenses;
-            if (imported.settings) settings = imported.settings;
-            if (imported.members) members = imported.members;
-            localStorage.setItem('travel_expenses', JSON.stringify(expenses));
-            localStorage.setItem('travel_settings', JSON.stringify(settings));
-            localStorage.setItem('split_members', JSON.stringify(members));
-            renderDaily();
-            renderMembers();
-            alert('資料匯入成功！');
-          }
-        } catch (err) {
-          alert('匯入失敗，請確認檔案格式。');
+        if (
+          imported.settings &&
+          typeof imported.settings.currency === "string" &&
+          validRate(Number(imported.settings.rate))
+        ) {
+          settings = {
+            currency: imported.settings.currency,
+            rate: Number(imported.settings.rate)
+          };
         }
-      };
-      reader.readAsText(file);
+
+        if (
+          Array.isArray(imported.members) &&
+          imported.members.every(member => typeof member === "string")
+        ) {
+          members = [...new Set(imported.members)];
+        }
+
+        saveExpenses();
+        saveSettings();
+        saveMembers();
+
+        document.getElementById("currencySymbol").value = settings.currency;
+        document.getElementById("exchangeRate").value = settings.rate;
+
+        renderDaily();
+        renderMembers();
+
+        showToast("資料匯入成功！");
+      } catch (error) {
+        showToast(error.message || "匯入失敗，請確認備份檔案");
+      }
     };
-    input.click();
-  }
+
+    reader.readAsText(file);
+  };
+
+  input.click();
+}
 </script>
 
 </body>
