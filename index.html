@@ -208,9 +208,9 @@
         <input type="number" id="inputAmount" class="form-control" placeholder="0" step="any">
       </div>
       <div class="form-group" style="flex: 1;">
-        <label>照片備註 (拍照或相簿)</label>
-        <!-- 改用明確的副檔名，允許系統開啟選擇器選取相簿照片或相機 -->
-        <input type="file" id="inputPhoto" class="form-control" accept="image/jpeg,image/png,image/heic,image/heif,image/webp">
+        <label>照片備註</label>
+        <!-- 不加 accept 或 capture 屬性，由手機系統自行喚起標準選擇彈窗（包含拍照與相簿選項） -->
+        <input type="file" id="inputPhoto" class="form-control">
       </div>
     </div>
     <button class="btn-submit" onclick="addExpense()">新增記帳</button>
@@ -265,6 +265,10 @@
         canvas.height = (img.width > maxW) ? img.height * scale : img.height;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         callback(canvas.toDataURL('image/jpeg', 0.6)); // 壓縮品質 0.6
+      };
+      img.onerror = function() {
+        // 若選取的不是圖片檔，跳過圖片處理直接儲存
+        callback(null);
       };
       img.src = e.target.result;
     };
