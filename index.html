@@ -127,6 +127,7 @@
       cursor: pointer;
     }
     .btn-secondary { background: var(--secondary); }
+    .btn-accent { background: var(--accent); }
 
     /* 明細列表 */
     .item-list { display: flex; flex-direction: column; gap: 10px; }
@@ -292,23 +293,32 @@
       <div class="member-tags" id="memberTagsList"></div>
     </div>
 
-    <!-- 2. 新增分帳消費項目 -->
+    <!-- 2. AI 解析文字快速貼上匯入區 -->
+    <div class="card" style="background: #f0f7ff; border: 1px solid #b3d7ff;">
+      <div class="card-title" style="color: #0056b3;">📋 貼上 AI 解析出的收據文字</div>
+      <div class="form-group">
+        <textarea id="pasteTextarea" class="form-control" rows="3" placeholder="可以直接把我幫你整理好的發票明細貼在這裡！例如：&#10;拉麵 1200&#10;煎餃 450&#10;綠茶 150"></textarea>
+      </div>
+      <button class="btn-submit btn-accent" onclick="parseAndImportText()">🚀 一鍵匯入分帳清單</button>
+    </div>
+
+    <!-- 3. 單筆新增共同消費 -->
     <div class="card">
-      <div class="card-title">➕ 新增共同消費金額</div>
+      <div class="card-title">➕ 新增單筆消費金額</div>
       <div class="form-row">
-        <input type="text" id="splitItemName" class="form-control" placeholder="項目內容 (例: 居酒屋、計程車)" style="flex: 1.5;">
+        <input type="text" id="splitItemName" class="form-control" placeholder="項目內容 (例: 居酒屋)" style="flex: 1.5;">
         <input type="number" id="splitItemPrice" class="form-control" placeholder="總金額" style="flex: 1;">
       </div>
       <button class="btn-submit" onclick="addSplitItem()">加入分帳列表</button>
     </div>
 
-    <!-- 3. 明細與分攤人員勾選 -->
+    <!-- 4. 明細與分攤人員勾選 -->
     <div class="card" id="splitItemsCard" style="display:none;">
-      <div class="card-title">📝 明細與分攤人員 (預設平均分配，可手動點擊切換)</div>
+      <div class="card-title">📝 明細與分攤人員 (預設平均分配，點擊可切換)</div>
       <div id="splitItemsContainer"></div>
     </div>
 
-    <!-- 4. 結算結果 -->
+    <!-- 5. 結算結果 -->
     <div class="card" id="splitResultCard" style="display:none;">
       <div class="card-title">💰 個人應付金額結算</div>
       <div id="splitResultList"></div>
@@ -520,6 +530,48 @@
     renderMembers();
   }
 
+  // 解析文字並自動產生項目
+  function parseAndImportText() {
+    const text = document.getElementById('pasteTextarea').value.trim();
+    if (!text) {
+      alert('請先貼入文字！');
+      return;
+    }
+
+    const lines = text.split('\n');
+    let importedCount = 0;
+
+    lines.forEach((line, idx) => {
+      const cleanLine = line.trim();
+      if (!cleanLine) return;
+
+      // 使用正則表達式尋找最後一個出現的數字作為金額
+      const match = cleanLine.match(/^(.*?)\s*[:=\s/]\s*([\d,.]+)\s*$/) \vert{}\vert{} cleanLine.match(/^(.*?)\s+([\d,.]+)$/);
+      
+      if (match) {
+        const name = match[1].trim() || '項目';
+        const price = parseFloat(match[2].replace(/,/g, ''));
+        if (!isNaN(price) && price > 0) {
+          splitItems.push({
+            id: Date.now() + idx,
+            name: name,
+            price: price,
+            assignedMembers: [...members]
+          });
+          importedCount++;
+        }
+      }
+    });
+
+    if (importedCount > 0) {
+      document.getElementById('pasteTextarea').value = '';
+      renderSplitItems();
+      alert(`✅ 成功匯入 ${importedCount} 個項目！`);
+    } else {
+      alert('無法辨識文字格式，請確保每行包含「品名」與「金額」（例：拉麵 1200）');
+    }
+  }
+
   function addSplitItem() {
     const nameInput = document.getElementById('splitItemName');
     const priceInput = document.getElementById('splitItemPrice');
@@ -535,7 +587,7 @@
       id: Date.now(),
       name: name,
       price: price,
-      assignedMembers: [...members] // 預設全員平均分攤
+      assignedMembers: [...members]
     });
 
     nameInput.value = '';
