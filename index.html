@@ -1,1 +1,453 @@
 
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>出國記帳本</title>
+  <style>
+    :root {
+      --primary: #4a90e2;
+      --bg: #f5f7fa;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --text-muted: #666666;
+      --border: #e0e0e0;
+      --danger: #e74c3c;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 16px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .container { max-width: 600px; margin: 0 auto; padding: 12px; }
+
+    /* 總覽卡片 */
+    .summary-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-item { text-align: center; flex: 1; }
+    .summary-item .title { font-size: 0.8em; color: var(--text-muted); }
+    .summary-item .value { font-size: 1.3em; font-weight: bold; color: var(--primary); margin-top: 4px; }
+
+    /* 設定區塊 */
+    .settings-bar {
+      background: var(--card-bg);
+      border-radius: 8px;
+      padding: 10px;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.9em;
+    }
+    .settings-bar input { width: 80px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; }
+
+    /* 按天切換分頁 */
+    .day-selector {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .day-btn {
+      background: #e9ecef;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .day-btn.active { background: var(--primary); color: white; }
+
+    /* 新增表單 */
+    .add-form {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85em; color: var(--text-muted); margin-bottom: 4px; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1em; }
+    .form-row { display: flex; gap: 10px; }
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* 明細列表 */
+    .item-list { display: flex; flex-direction: column; gap: 10px; }
+    .expense-item {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .item-info { flex: 1; }
+    .item-title { font-weight: bold; font-size: 1em; }
+    .item-meta { font-size: 0.8em; color: var(--text-muted); margin-top: 2px; }
+    .item-amount { text-align: right; margin-left: 12px; }
+    .amount-foreign { font-weight: bold; font-size: 1.1em; }
+    .amount-twd { font-size: 0.8em; color: var(--text-muted); }
+    .item-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      margin-right: 12px;
+      cursor: pointer;
+    }
+    .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.2em; cursor: pointer; margin-left: 12px; }
+
+    /* Modal 圖片預覽 */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal img { max-width: 90%; max-height: 80%; border-radius: 8px; }
+
+    /* 匯出備份工具 */
+    .backup-tools {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 0.85em;
+      color: var(--text-muted);
+    }
+    .backup-tools button {
+      padding: 6px 12px;
+      background: #ddd;
+      border: none;
+      border-radius: 4px;
+      margin: 0 4px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>✈️ 出國記帳本</h1>
+</header>
+
+<div class="container">
+  <!-- 設定匯率與幣別 -->
+  <div class="settings-bar">
+    <span>幣別：</span>
+    <input type="text" id="currencySymbol" value="JPY" onchange="updateSettings()">
+    <span>1 外幣 = </span>
+    <input type="number" id="exchangeRate" value="0.21" step="0.001" onchange="updateSettings()">
+    <span>TWD</span>
+  </div>
+
+  <!-- 總攬統計 -->
+  <div class="summary-card">
+    <div class="summary-item">
+      <div class="title">今日總計 (<span class="curr-name">JPY</span>)</div>
+      <div class="value" id="dayTotalForeign">0</div>
+      <div class="item-meta" id="dayTotalTWD">≈ NT$ 0</div>
+    </div>
+    <div class="summary-item" style="border-left: 1px solid var(--border);">
+      <div class="title">旅程總累計 (TWD)</div>
+      <div class="value" id="grandTotalTWD">NT$ 0</div>
+    </div>
+  </div>
+
+  <!-- 日期選擇頁籤 -->
+  <div class="day-selector" id="daySelector"></div>
+
+  <!-- 新增記帳表單 -->
+  <div class="add-form">
+    <div class="form-row">
+      <div class="form-group" style="flex: 1;">
+        <label>日期</label>
+        <input type="date" id="inputDate" class="form-control">
+      </div>
+      <div class="form-group" style="flex: 1.5;">
+        <label>項目內容</label>
+        <input type="text" id="inputTitle" class="form-control" placeholder="例: 藥妝店、拉麵">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group" style="flex: 1;">
+        <label>金額 (<span class="curr-name">JPY</span>)</label>
+        <input type="number" id="inputAmount" class="form-control" placeholder="0" step="any">
+      </div>
+      <div class="form-group" style="flex: 1;">
+        <label>拍照 / 照片備註</label>
+        <input type="file" id="inputPhoto" class="form-control" accept="image/*" capture="environment">
+      </div>
+    </div>
+    <button class="btn-submit" onclick="addExpense()">新增記帳</button>
+  </div>
+
+  <!-- 花費明細列表 -->
+  <div class="item-list" id="itemList"></div>
+
+  <!-- 備份區 -->
+  <div class="backup-tools">
+    <button onclick="exportData()">匯出備份資料</button>
+    <button onclick="importData()">匯入備份資料</button>
+  </div>
+</div>
+
+<!-- 照片大圖預覽 Modal -->
+<div class="modal" id="imageModal" onclick="this.style.display='none'">
+  <img id="modalImg" src="" alt="預覽照片">
+</div>
+
+<script>
+  let expenses = JSON.parse(localStorage.getItem('travel_expenses')) || [];
+  let settings = JSON.parse(localStorage.getItem('travel_settings')) || { currency: 'JPY', rate: 0.21 };
+  let selectedDate = new Date().toISOString().split('T')[0];
+
+  // 初始化
+  window.onload = function() {
+    document.getElementById('inputDate').value = selectedDate;
+    document.getElementById('currencySymbol').value = settings.currency;
+    document.getElementById('exchangeRate').value = settings.rate;
+    render();
+  };
+
+  function updateSettings() {
+    settings.currency = document.getElementById('currencySymbol').value.toUpperCase() || 'FOREIGN';
+    settings.rate = parseFloat(document.getElementById('exchangeRate').value) || 1;
+    localStorage.setItem('travel_settings', JSON.stringify(settings));
+    render();
+  }
+
+  // 照片壓縮 (避免 LocalStorage 空間爆滿)
+  function compressImage(file, callback) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const maxW = 600; // 限制最大寬度 600px
+        const scale = maxW / img.width;
+        canvas.width = (img.width > maxW) ? maxW : img.width;
+        canvas.height = (img.width > maxW) ? img.height * scale : img.height;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        callback(canvas.toDataURL('image/jpeg', 0.6)); // 壓縮品質 0.6
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function addExpense() {
+    const date = document.getElementById('inputDate').value;
+    const title = document.getElementById('inputTitle').value.trim();
+    const amount = parseFloat(document.getElementById('inputAmount').value);
+    const photoInput = document.getElementById('inputPhoto');
+
+    if (!date || !title || isNaN(amount) || amount <= 0) {
+      alert('請填寫完整的日期、內容與有效金額！');
+      return;
+    }
+
+    const saveRecord = (photoData) => {
+      const record = {
+        id: Date.now(),
+        date: date,
+        title: title,
+        amount: amount,
+        rate: settings.rate,
+        currency: settings.currency,
+        photo: photoData || null
+      };
+      expenses.push(record);
+      localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+      
+      // 清空輸入框
+      document.getElementById('inputTitle').value = '';
+      document.getElementById('inputAmount').value = '';
+      document.getElementById('inputPhoto').value = '';
+      
+      selectedDate = date;
+      render();
+    };
+
+    if (photoInput.files && photoInput.files[0]) {
+      compressImage(photoInput.files[0], saveRecord);
+    } else {
+      saveRecord(null);
+    }
+  }
+
+  function deleteExpense(id) {
+    if (confirm('確定要刪除這筆記帳嗎？')) {
+      expenses = expenses.filter(item => item.id !== id);
+      localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+      render();
+    }
+  }
+
+  function render() {
+    // 更新幣別提示
+    document.querySelectorAll('.curr-name').forEach(el => el.textContent = settings.currency);
+
+    // 取得所有出現過的日期並排序
+    let dates = Array.from(new Set(expenses.map(e => e.date))).sort();
+    if (!dates.includes(selectedDate)) dates.push(selectedDate);
+    dates.sort();
+
+    // 渲染日期頁籤
+    const daySelector = document.getElementById('daySelector');
+    daySelector.innerHTML = '';
+    
+    // 「全部」選項
+    const allBtn = document.createElement('button');
+    allBtn.className = `day-btn ${selectedDate === 'ALL' ? 'active' : ''}`;
+    allBtn.textContent = '全部明細';
+    allBtn.onclick = () => { selectedDate = 'ALL'; render(); };
+    daySelector.appendChild(allBtn);
+
+    dates.forEach(d => {
+      const btn = document.createElement('button');
+      btn.className = `day-btn ${selectedDate === d ? 'active' : ''}`;
+      btn.textContent = d.slice(5); // 顯示 MM-DD
+      btn.onclick = () => { selectedDate = d; document.getElementById('inputDate').value = d; render(); };
+      daySelector.appendChild(btn);
+    });
+
+    // 過濾出當前顯示的資料
+    const filteredExpenses = selectedDate === 'ALL' 
+      ? expenses 
+      : expenses.filter(e => e.date === selectedDate);
+
+    // 計算金額
+    let dayForeignTotal = 0;
+    let dayTwdTotal = 0;
+    let grandTwdTotal = 0;
+
+    expenses.forEach(e => {
+      const twd = Math.round(e.amount * e.rate);
+      grandTwdTotal += twd;
+    });
+
+    filteredExpenses.forEach(e => {
+      dayForeignTotal += e.amount;
+      dayTwdTotal += Math.round(e.amount * e.rate);
+    });
+
+    document.getElementById('dayTotalForeign').textContent = dayForeignTotal.toLocaleString();
+    document.getElementById('dayTotalTWD').textContent = `≈ NT$ ${dayTwdTotal.toLocaleString()}`;
+    document.getElementById('grandTotalTWD').textContent = `NT$ ${grandTwdTotal.toLocaleString()}`;
+
+    // 渲染清單
+    const itemList = document.getElementById('itemList');
+    itemList.innerHTML = '';
+
+    if (filteredExpenses.length === 0) {
+      itemList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">尚無記帳資料</div>';
+      return;
+    }
+
+    // 依時間倒序排列
+    [...filteredExpenses].reverse().forEach(item => {
+      const twdVal = Math.round(item.amount * item.rate);
+      const el = document.createElement('div');
+      el.className = 'expense-item';
+      el.innerHTML = `
+        ${item.photo ? `<img src="${item.photo}" class="item-thumb" onclick="showModal('${item.photo}')">` : ''}
+        <div class="item-info">
+          <div class="item-title">${escapeHtml(item.title)}</div>
+          <div class="item-meta">${item.date}</div>
+        </div>
+        <div class="item-amount">
+          <div class="amount-foreign">${item.amount.toLocaleString()} ${item.currency}</div>
+          <div class="amount-twd">≈ NT$ ${twdVal.toLocaleString()}</div>
+        </div>
+        <button class="btn-delete" onclick="deleteExpense(${item.id})">×</button>
+      `;
+      itemList.appendChild(el);
+    });
+  }
+
+  function showModal(src) {
+    document.getElementById('modalImg').src = src;
+    document.getElementById('imageModal').style.display = 'flex';
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+  }
+
+  // 備份功能
+  function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ expenses, settings }));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `travel_expenses_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported.expenses) {
+            expenses = imported.expenses;
+            if (imported.settings) settings = imported.settings;
+            localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+            localStorage.setItem('travel_settings', JSON.stringify(settings));
+            render();
+            alert('資料匯入成功！');
+          }
+        } catch (err) {
+          alert('匯入失敗，請確認檔案格式是否正確。');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  }
+</script>
+
+</body>
+</html>
