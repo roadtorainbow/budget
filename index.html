@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>出國記帳與 AI 拆帳助手</title>
+  <title>出國記帳與多人分帳</title>
   <style>
     :root {
       --primary: #4a90e2;
@@ -31,7 +31,6 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    /* 頂部頁籤切換 */
     .nav-tabs {
       display: flex;
       background: #ffffff;
@@ -60,7 +59,6 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* 通用卡片與表單 */
     .card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -172,16 +170,17 @@
     }
     .member-tag button { background: none; border: none; color: var(--danger); font-weight: bold; cursor: pointer; }
 
-    .split-item-row { border-bottom: 1px dashed var(--border); padding: 10px 0; }
-    .split-item-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .split-item-row { border-bottom: 1px dashed var(--border); padding: 12px 0; }
+    .split-item-header { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
     .member-check-group { display: flex; flex-wrap: wrap; gap: 6px; }
     .member-check-btn {
-      padding: 4px 10px;
+      padding: 5px 12px;
       border: 1px solid var(--border);
       border-radius: 16px;
       background: #f8f9fa;
       font-size: 0.85em;
       cursor: pointer;
+      user-select: none;
     }
     .member-check-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
 
@@ -206,18 +205,18 @@
 <body>
 
 <header>
-  <h1>✈️ 出國記帳與拆帳助手</h1>
+  <h1>✈️ 出國記帳與多人分帳</h1>
 </header>
 
 <!-- 切換分頁選單 -->
 <div class="nav-tabs">
   <button class="tab-btn active" onclick="switchTab('daily')">📖 每日記帳</button>
-  <button class="tab-btn" onclick="switchTab('split')">🧾 收據辨識與分帳</button>
+  <button class="tab-btn" onclick="switchTab('split')">🍕 多人分帳計算機</button>
 </div>
 
 <div class="container">
 
-  <!-- 全局設定卡片 (匯率) -->
+  <!-- 匯率與幣別設定 -->
   <div class="card settings-bar">
     <span>幣別：</span>
     <input type="text" id="currencySymbol" value="JPY" onchange="updateSettings()">
@@ -280,47 +279,38 @@
     </div>
   </div>
 
-  <!-- ================= 頁籤 2：收據辨識與分帳 ================= -->
+  <!-- ================= 頁籤 2：多人分帳計算機 ================= -->
   <div id="tab-split" class="tab-content">
     
-    <!-- API Key 設定 -->
-    <div class="card" style="background: #eef7fe;">
-      <div class="card-title" style="font-size: 0.9em;">🔑 AI 辨識金鑰設定 (自由選擇)</div>
-      <input type="password" id="apiKeyInput" class="form-control" placeholder="填入 OpenAI API Key (格式: sk-...) 可開啟自動AI讀取收據">
-      <div style="font-size:0.75em; color:var(--text-muted); margin-top:4px;">未填寫金鑰亦可使用「手動新增項目」功能進行多人分帳。</div>
-    </div>
-
     <!-- 1. 成員管理 -->
     <div class="card">
       <div class="card-title">👥 參與分帳人員</div>
       <div class="form-row">
-        <input type="text" id="newMemberInput" class="form-control" placeholder="輸入成員名稱 (例: 小明)">
+        <input type="text" id="newMemberInput" class="form-control" placeholder="輸入成員名字 (例: 小明)">
         <button class="btn-submit" style="width: auto; white-space: nowrap;" onclick="addMember()">新增成員</button>
       </div>
       <div class="member-tags" id="memberTagsList"></div>
     </div>
 
-    <!-- 2. 上傳收據 -->
+    <!-- 2. 新增分帳消費項目 -->
     <div class="card">
-      <div class="card-title">📸 拍照/上傳收據 (支援中文/外文)</div>
-      <input type="file" id="receiptImageInput" class="form-control" accept="image/*" onchange="processReceipt(this)">
-      <div id="loadingSpinner" style="display:none; text-align:center; padding:15px; color:var(--primary); font-weight:bold;">
-        🔄 AI 正在分析收據並翻譯中文明細與金額...
+      <div class="card-title">➕ 新增共同消費金額</div>
+      <div class="form-row">
+        <input type="text" id="splitItemName" class="form-control" placeholder="項目內容 (例: 居酒屋、計程車)" style="flex: 1.5;">
+        <input type="number" id="splitItemPrice" class="form-control" placeholder="總金額" style="flex: 1;">
       </div>
+      <button class="btn-submit" onclick="addSplitItem()">加入分帳列表</button>
     </div>
 
-    <!-- 3. 明細分拆勾選區 -->
+    <!-- 3. 明細與分攤人員勾選 -->
     <div class="card" id="splitItemsCard" style="display:none;">
-      <div class="card-title">
-        <span>📝 辨識明細與分攤勾選</span>
-        <button class="day-btn" style="padding:4px 10px; font-size:0.8em;" onclick="manualAddSplitItem()">+ 手動加項</button>
-      </div>
+      <div class="card-title">📝 明細與分攤人員 (預設平均分配，可手動點擊切換)</div>
       <div id="splitItemsContainer"></div>
     </div>
 
-    <!-- 4. 分帳統計與匯入主記帳本 -->
+    <!-- 4. 結算結果 -->
     <div class="card" id="splitResultCard" style="display:none;">
-      <div class="card-title">💰 分帳計算結果</div>
+      <div class="card-title">💰 個人應付金額結算</div>
       <div id="splitResultList"></div>
       <button class="btn-submit btn-secondary" style="margin-top:12px;" onclick="importSplitToDaily()">📥 將分帳結果寫入「每日記帳」</button>
     </div>
@@ -501,7 +491,7 @@
     });
   }
 
-  // ================= 收據辨識與拆帳邏輯 =================
+  // ================= 分帳邏輯 =================
   function renderMembers() {
     localStorage.setItem('split_members', JSON.stringify(members));
     const container = document.getElementById('memberTagsList');
@@ -530,94 +520,26 @@
     renderMembers();
   }
 
-  // AI 辨識（強化中文與通用收據Prompt）
-  async function processReceipt(input) {
-    if (!input.files || !input.files[0]) return;
-    const file = input.files[0];
-    const apiKey = document.getElementById('apiKeyInput').value.trim();
+  function addSplitItem() {
+    const nameInput = document.getElementById('splitItemName');
+    const priceInput = document.getElementById('splitItemPrice');
+    const name = nameInput.value.trim() || '未命名消費';
+    const price = parseFloat(priceInput.value);
 
-    if (!apiKey) {
-      alert('提示：未輸入 API Key。系統已為您建立範例項目，您可以直接手動輸入金額與品名！');
-      splitItems = [
-        { id: 1, name: '餐點/商品 A (範例)', price: 1200, assignedMembers: [...members] },
-        { id: 2, name: '飲料 B (範例)', price: 350, assignedMembers: members.length > 0 ? [members[0]] : [] }
-      ];
-      renderSplitItems();
+    if (isNaN(price) || price <= 0) {
+      alert('請輸入有效金額！');
       return;
     }
 
-    document.getElementById('loadingSpinner').style.display = 'block';
-
-    try {
-      const base64Image = await fileToBase64(file);
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                { 
-                  type: 'text', 
-                  text: '請精確辨識這張收據/發票/明細表中的所有商品與服務項目及其金額。\n' +
-                        '注意：不論收據是中文、日文、英文或韓文，請一律將項目名稱翻譯並整理成「繁體中文」。\n' +
-                        '請嚴格僅輸出 JSON 陣列格式，格式如下：\n' +
-                        '[{"name":"項目中文名稱","price":數字金額}]\n' +
-                        '不要包含任何 Markdown 標記或額外說明文字。' 
-                },
-                { type: 'image_url', image_url: { url: base64Image } }
-              ]
-            }
-          ],
-          max_tokens: 1000
-        })
-      });
-
-      const data = await response.json();
-      document.getElementById('loadingSpinner').style.display = 'none';
-
-      if (data.choices && data.choices[0]) {
-        let content = data.choices[0].message.content.trim();
-        content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsedItems = JSON.parse(content);
-        
-        splitItems = parsedItems.map((it, idx) => ({
-          id: Date.now() + idx,
-          name: it.name,
-          price: parseFloat(it.price) || 0,
-          assignedMembers: [...members]
-        }));
-        renderSplitItems();
-      } else {
-        alert('辨識失敗，請檢查 API Key 是否正確。');
-      }
-    } catch (err) {
-      document.getElementById('loadingSpinner').style.display = 'none';
-      alert('辨識發生錯誤：' + err.message);
-    }
-  }
-
-  function fileToBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
-  }
-
-  function manualAddSplitItem() {
     splitItems.push({
       id: Date.now(),
-      name: '自訂品項',
-      price: 0,
-      assignedMembers: [...members]
+      name: name,
+      price: price,
+      assignedMembers: [...members] // 預設全員平均分攤
     });
+
+    nameInput.value = '';
+    priceInput.value = '';
     renderSplitItems();
   }
 
@@ -730,13 +652,12 @@
     totalRow.style.borderTop = '2px solid var(--border)';
     totalRow.style.fontWeight = 'bold';
     totalRow.innerHTML = `
-      <span>收據總計</span>
+      <span>總計消費金額</span>
       <span>${grandTotalForeign.toLocaleString()} ${settings.currency} (≈ NT$ ${grandTwd.toLocaleString()})</span>
     `;
     container.appendChild(totalRow);
   }
 
-  // 匯入每日記帳
   function importSplitToDaily() {
     const today = new Date().toISOString().split('T')[0];
     let importedCount = 0;
@@ -753,7 +674,7 @@
         expenses.push({
           id: Date.now() + Math.random(),
           date: today,
-          title: `[收據拆帳] ${m} 的分攤費用`,
+          title: `[分帳] ${m} 的分攤費用`,
           amount: Math.round(personTotal * 100) / 100,
           rate: settings.rate,
           currency: settings.currency,
@@ -765,7 +686,7 @@
 
     localStorage.setItem('travel_expenses', JSON.stringify(expenses));
     renderDaily();
-    alert(`✅ 已將 ${importedCount} 位成員的分帳結果同步至「每日記帳」！`);
+    alert(`✅ 已將 ${importedCount} 位成員的分帳金額寫入每日記帳！`);
     switchTab('daily');
   }
 
