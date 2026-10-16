@@ -3,20 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>收據辨識與自動分帳</title>
+  <title>出國記帳與 AI 拆帳助手</title>
   <style>
     :root {
-      --primary: #2ecc71;
-      --primary-dark: #27ae60;
+      --primary: #4a90e2;
+      --secondary: #2ecc71;
       --bg: #f5f7fa;
       --card-bg: #ffffff;
       --text: #333333;
       --text-muted: #666666;
       --border: #e0e0e0;
+      --danger: #e74c3c;
       --accent: #3498db;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     body { background-color: var(--bg); color: var(--text); padding-bottom: 80px; }
 
     header {
@@ -30,8 +31,36 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .container { max-width: 650px; margin: 0 auto; padding: 12px; }
+    /* 頂部頁籤切換 */
+    .nav-tabs {
+      display: flex;
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 57px;
+      z-index: 99;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: none;
+      font-size: 1em;
+      font-weight: bold;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
 
+    .container { max-width: 600px; margin: 0 auto; padding: 12px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* 通用卡片與表單 */
     .card {
       background: var(--card-bg);
       border-radius: 12px;
@@ -39,32 +68,100 @@
       margin-bottom: 16px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
-
     .card-title {
-      font-size: 1.1em;
+      font-size: 1em;
       font-weight: bold;
       margin-bottom: 12px;
-      color: var(--text);
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .form-control {
-      width: 100%;
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.95em;
+    .summary-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+    .summary-item { text-align: center; flex: 1; }
+    .summary-item .title { font-size: 0.8em; color: var(--text-muted); }
+    .summary-item .value { font-size: 1.3em; font-weight: bold; color: var(--primary); margin-top: 4px; }
 
-    .form-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; }
+    .settings-bar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: 0.9em;
+    }
+    .settings-bar input { width: 80px; padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; }
 
-    /* 成員標籤區 */
+    .day-selector {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 16px;
+    }
+    .day-btn {
+      background: #e9ecef;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .day-btn.active { background: var(--primary); color: white; }
+
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 0.85em; color: var(--text-muted); margin-bottom: 4px; }
+    .form-control { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 1em; }
+    .form-row { display: flex; gap: 10px; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 1em;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-secondary { background: var(--secondary); }
+
+    /* 明細列表 */
+    .item-list { display: flex; flex-direction: column; gap: 10px; }
+    .expense-item {
+      background: var(--card-bg);
+      border-radius: 10px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .item-info { flex: 1; }
+    .item-title { font-weight: bold; font-size: 1em; }
+    .item-meta { font-size: 0.8em; color: var(--text-muted); margin-top: 2px; }
+    .item-amount { text-align: right; margin-left: 12px; }
+    .amount-foreign { font-weight: bold; font-size: 1.1em; }
+    .amount-twd { font-size: 0.8em; color: var(--text-muted); }
+    .item-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 6px;
+      object-fit: cover;
+      margin-right: 12px;
+      cursor: pointer;
+    }
+    .btn-delete { background: none; border: none; color: var(--danger); font-size: 1.2em; cursor: pointer; margin-left: 12px; }
+
+    /* 拆帳專屬樣式 */
     .member-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
     .member-tag {
       background: #e8f8f5;
-      color: var(--primary-dark);
+      color: #27ae60;
       padding: 6px 12px;
       border-radius: 20px;
       font-size: 0.9em;
@@ -73,16 +170,11 @@
       gap: 6px;
       border: 1px solid #a3e4d7;
     }
-    .member-tag button { background: none; border: none; color: #e74c3c; font-weight: bold; cursor: pointer; }
+    .member-tag button { background: none; border: none; color: var(--danger); font-weight: bold; cursor: pointer; }
 
-    /* 明細列表樣式 */
-    .item-row {
-      border-bottom: 1px dashed var(--border);
-      padding: 12px 0;
-    }
-    .item-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 6px; }
-    .item-members { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-    
+    .split-item-row { border-bottom: 1px dashed var(--border); padding: 10px 0; }
+    .split-item-header { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .member-check-group { display: flex; flex-wrap: wrap; gap: 6px; }
     .member-check-btn {
       padding: 4px 10px;
       border: 1px solid var(--border);
@@ -90,116 +182,326 @@
       background: #f8f9fa;
       font-size: 0.85em;
       cursor: pointer;
-      user-select: none;
     }
-    .member-check-btn.selected {
-      background: var(--accent);
-      color: white;
-      border-color: var(--accent);
-    }
+    .member-check-btn.selected { background: var(--accent); color: white; border-color: var(--accent); }
 
-    /* 結算卡片 */
-    .split-result {
-      background: #f8f9fa;
-      border-radius: 8px;
-      padding: 12px;
-      margin-top: 10px;
-    }
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid #eee;
-    }
-    .result-row:last-child { border-bottom: none; font-weight: bold; color: var(--primary-dark); }
+    .split-result-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #eee; }
 
-    .btn {
-      background: var(--primary);
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      width: 100%;
-      text-align: center;
-    }
-    .btn-secondary { background: var(--accent); }
-    .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
-
-    .loading-spinner {
+    /* Modal 圖片預覽 */
+    .modal {
       display: none;
-      text-align: center;
-      padding: 20px;
-      color: var(--text-muted);
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 200;
+      justify-content: center;
+      align-items: center;
     }
+    .modal img { max-width: 90%; max-height: 80%; border-radius: 8px; }
+
+    .backup-tools { margin-top: 24px; text-align: center; font-size: 0.85em; color: var(--text-muted); }
+    .backup-tools button { padding: 6px 12px; background: #ddd; border: none; border-radius: 4px; margin: 0 4px; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>🧾 收據翻譯與自動分帳</h1>
+  <h1>✈️ 出國記帳與拆帳助手</h1>
 </header>
+
+<!-- 切換分頁選單 -->
+<div class="nav-tabs">
+  <button class="tab-btn active" onclick="switchTab('daily')">📖 每日記帳</button>
+  <button class="tab-btn" onclick="switchTab('split')">🧾 收據辨識與分帳</button>
+</div>
 
 <div class="container">
 
-  <!-- API 設定 (選擇性) -->
-  <div class="card" style="background: #eef7fe;">
-    <div class="card-title" style="font-size:0.95em;">⚙️ 設定與匯率</div>
-    <div class="form-row">
-      <span style="font-size:0.85em; white-space:nowrap;">匯率 (1外幣=TWD):</span>
-      <input type="number" id="rateInput" class="form-control" value="0.21" step="0.001" onchange="calculateSplit()">
+  <!-- 全局設定卡片 (匯率) -->
+  <div class="card settings-bar">
+    <span>幣別：</span>
+    <input type="text" id="currencySymbol" value="JPY" onchange="updateSettings()">
+    <span>1 外幣 = </span>
+    <input type="number" id="exchangeRate" value="0.21" step="0.001" onchange="updateSettings()">
+    <span>TWD</span>
+  </div>
+
+  <!-- ================= 頁籤 1：每日記帳 ================= -->
+  <div id="tab-daily" class="tab-content active">
+    <!-- 總覽統計 -->
+    <div class="card summary-card">
+      <div class="summary-item">
+        <div class="title">當前視角總計 (<span class="curr-name">JPY</span>)</div>
+        <div class="value" id="dayTotalForeign">0</div>
+        <div class="item-meta" id="dayTotalTWD">≈ NT$ 0</div>
+      </div>
+      <div class="summary-item" style="border-left: 1px solid var(--border);">
+        <div class="title">旅程總累計 (TWD)</div>
+        <div class="value" id="grandTotalTWD">NT$ 0</div>
+      </div>
     </div>
-    <div class="form-row">
-      <input type="password" id="apiKeyInput" class="form-control" placeholder="OpenAI / 相容 API Key (可選，用於全自動AI識別)">
+
+    <!-- 按天選擇頁籤 -->
+    <div class="day-selector" id="daySelector"></div>
+
+    <!-- 手動新增記帳 -->
+    <div class="card">
+      <div class="card-title">✍️ 新增手動記帳</div>
+      <div class="form-row">
+        <div class="form-group" style="flex: 1;">
+          <label>日期</label>
+          <input type="date" id="inputDate" class="form-control">
+        </div>
+        <div class="form-group" style="flex: 1.5;">
+          <label>項目內容</label>
+          <input type="text" id="inputTitle" class="form-control" placeholder="例: 藥妝店、拉麵">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex: 1;">
+          <label>金額 (<span class="curr-name">JPY</span>)</label>
+          <input type="number" id="inputAmount" class="form-control" placeholder="0" step="any">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label>照片備註</label>
+          <input type="file" id="inputPhoto" class="form-control" accept="image/*">
+        </div>
+      </div>
+      <button class="btn-submit" onclick="addExpense()">新增記帳</button>
+    </div>
+
+    <!-- 明細列表 -->
+    <div class="item-list" id="itemList"></div>
+
+    <!-- 備份工具 -->
+    <div class="backup-tools">
+      <button onclick="exportData()">匯出備份資料</button>
+      <button onclick="importData()">匯入備份資料</button>
     </div>
   </div>
 
-  <!-- 1. 成員設定 -->
-  <div class="card">
-    <div class="card-title">👥 參與分帳成員</div>
-    <div class="form-row">
-      <input type="text" id="newMemberInput" class="form-control" placeholder="輸入成員名字（例：小明）">
-      <button class="btn" style="width: auto; white-space: nowrap;" onclick="addMember()">新增成員</button>
+  <!-- ================= 頁籤 2：收據辨識與分帳 ================= -->
+  <div id="tab-split" class="tab-content">
+    
+    <!-- API Key 設定 -->
+    <div class="card" style="background: #eef7fe;">
+      <div class="card-title" style="font-size: 0.9em;">🔑 AI 辨識金鑰設定 (自由選擇)</div>
+      <input type="password" id="apiKeyInput" class="form-control" placeholder="填入 OpenAI API Key (格式: sk-...) 可開啟自動AI讀取收據">
+      <div style="font-size:0.75em; color:var(--text-muted); margin-top:4px;">未填寫金鑰亦可使用「手動新增項目」功能進行多人分帳。</div>
     </div>
-    <div class="member-tags" id="memberTagsList"></div>
-  </div>
 
-  <!-- 2. 拍照上傳與識別 -->
-  <div class="card">
-    <div class="card-title">📸 上傳/拍照收據</div>
-    <input type="file" id="receiptImageInput" class="form-control" accept="image/*" onchange="processReceipt(this)">
-    <div class="loading-spinner" id="loadingSpinner">
-      🔄 AI 正在讀取並翻譯收據項目與金額，請稍候...
+    <!-- 1. 成員管理 -->
+    <div class="card">
+      <div class="card-title">👥 參與分帳人員</div>
+      <div class="form-row">
+        <input type="text" id="newMemberInput" class="form-control" placeholder="輸入成員名稱 (例: 小明)">
+        <button class="btn-submit" style="width: auto; white-space: nowrap;" onclick="addMember()">新增成員</button>
+      </div>
+      <div class="member-tags" id="memberTagsList"></div>
     </div>
-  </div>
 
-  <!-- 3. 明細與歸屬人勾選 -->
-  <div class="card" id="itemsCard" style="display:none;">
-    <div class="card-title">
-      <span>📝 辨識明細與分攤人員</span>
-      <button class="btn-outline" style="font-size:0.8em; padding:4px 8px;" onclick="manualAddItem()">+ 手動加項</button>
+    <!-- 2. 上傳收據 -->
+    <div class="card">
+      <div class="card-title">📸 拍照/上傳收據 (支援中文/外文)</div>
+      <input type="file" id="receiptImageInput" class="form-control" accept="image/*" onchange="processReceipt(this)">
+      <div id="loadingSpinner" style="display:none; text-align:center; padding:15px; color:var(--primary); font-weight:bold;">
+        🔄 AI 正在分析收據並翻譯中文明細與金額...
+      </div>
     </div>
-    <div id="itemsContainer"></div>
-  </div>
 
-  <!-- 4. 結算結果 -->
-  <div class="card" id="resultCard" style="display:none;">
-    <div class="card-title">💰 分帳統計結果</div>
-    <div class="split-result" id="splitResultList"></div>
-    <button class="btn" style="margin-top:12px;" onclick="saveToMainExpenses()">📥 將分帳結果寫入主記帳本</button>
+    <!-- 3. 明細分拆勾選區 -->
+    <div class="card" id="splitItemsCard" style="display:none;">
+      <div class="card-title">
+        <span>📝 辨識明細與分攤勾選</span>
+        <button class="day-btn" style="padding:4px 10px; font-size:0.8em;" onclick="manualAddSplitItem()">+ 手動加項</button>
+      </div>
+      <div id="splitItemsContainer"></div>
+    </div>
+
+    <!-- 4. 分帳統計與匯入主記帳本 -->
+    <div class="card" id="splitResultCard" style="display:none;">
+      <div class="card-title">💰 分帳計算結果</div>
+      <div id="splitResultList"></div>
+      <button class="btn-submit btn-secondary" style="margin-top:12px;" onclick="importSplitToDaily()">📥 將分帳結果寫入「每日記帳」</button>
+    </div>
+
   </div>
 
 </div>
 
+<!-- 照片放大 Modal -->
+<div class="modal" id="imageModal" onclick="this.style.display='none'">
+  <img id="modalImg" src="" alt="預覽照片">
+</div>
+
 <script>
+  let expenses = JSON.parse(localStorage.getItem('travel_expenses')) || [];
+  let settings = JSON.parse(localStorage.getItem('travel_settings')) || { currency: 'JPY', rate: 0.21 };
   let members = JSON.parse(localStorage.getItem('split_members')) || ['我', '小明', '小華'];
-  let items = []; // { id, name, price, assignedMembers: [] }
+  let splitItems = []; // { id, name, price, assignedMembers: [] }
+  let selectedDate = new Date().toISOString().split('T')[0];
 
   window.onload = function() {
+    document.getElementById('inputDate').value = selectedDate;
+    document.getElementById('currencySymbol').value = settings.currency;
+    document.getElementById('exchangeRate').value = settings.rate;
+    renderDaily();
     renderMembers();
   };
 
+  function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    if (tabName === 'daily') {
+      document.querySelectorAll('.tab-btn')[0].classList.add('active');
+      document.getElementById('tab-daily').classList.add('active');
+    } else {
+      document.querySelectorAll('.tab-btn')[1].classList.add('active');
+      document.getElementById('tab-split').classList.add('active');
+    }
+  }
+
+  function updateSettings() {
+    settings.currency = document.getElementById('currencySymbol').value.toUpperCase() || 'FOREIGN';
+    settings.rate = parseFloat(document.getElementById('exchangeRate').value) || 1;
+    localStorage.setItem('travel_settings', JSON.stringify(settings));
+    renderDaily();
+    calculateSplit();
+  }
+
+  // ================= 每日記帳邏輯 =================
+  function compressImage(file, callback) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const maxW = 600;
+        const scale = maxW / img.width;
+        canvas.width = (img.width > maxW) ? maxW : img.width;
+        canvas.height = (img.width > maxW) ? img.height * scale : img.height;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        callback(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = () => callback(null);
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function addExpense() {
+    const date = document.getElementById('inputDate').value;
+    const title = document.getElementById('inputTitle').value.trim();
+    const amount = parseFloat(document.getElementById('inputAmount').value);
+    const photoInput = document.getElementById('inputPhoto');
+
+    if (!date || !title || isNaN(amount) || amount <= 0) {
+      alert('請填寫完整的日期、內容與有效金額！');
+      return;
+    }
+
+    const saveRecord = (photoData) => {
+      expenses.push({
+        id: Date.now(),
+        date: date,
+        title: title,
+        amount: amount,
+        rate: settings.rate,
+        currency: settings.currency,
+        photo: photoData || null
+      });
+      localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+      
+      document.getElementById('inputTitle').value = '';
+      document.getElementById('inputAmount').value = '';
+      document.getElementById('inputPhoto').value = '';
+      selectedDate = date;
+      renderDaily();
+    };
+
+    if (photoInput.files && photoInput.files[0]) {
+      compressImage(photoInput.files[0], saveRecord);
+    } else {
+      saveRecord(null);
+    }
+  }
+
+  function deleteExpense(id) {
+    if (confirm('確定要刪除這筆記帳嗎？')) {
+      expenses = expenses.filter(item => item.id !== id);
+      localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+      renderDaily();
+    }
+  }
+
+  function renderDaily() {
+    document.querySelectorAll('.curr-name').forEach(el => el.textContent = settings.currency);
+
+    let dates = Array.from(new Set(expenses.map(e => e.date))).sort();
+    if (!dates.includes(selectedDate)) dates.push(selectedDate);
+    dates.sort();
+
+    const daySelector = document.getElementById('daySelector');
+    daySelector.innerHTML = '';
+    
+    const allBtn = document.createElement('button');
+    allBtn.className = `day-btn ${selectedDate === 'ALL' ? 'active' : ''}`;
+    allBtn.textContent = '全部明細';
+    allBtn.onclick = () => { selectedDate = 'ALL'; renderDaily(); };
+    daySelector.appendChild(allBtn);
+
+    dates.forEach(d => {
+      const btn = document.createElement('button');
+      btn.className = `day-btn ${selectedDate === d ? 'active' : ''}`;
+      btn.textContent = d.slice(5);
+      btn.onclick = () => { selectedDate = d; document.getElementById('inputDate').value = d; renderDaily(); };
+      daySelector.appendChild(btn);
+    });
+
+    const filteredExpenses = selectedDate === 'ALL' ? expenses : expenses.filter(e => e.date === selectedDate);
+
+    let dayForeignTotal = 0, dayTwdTotal = 0, grandTwdTotal = 0;
+    expenses.forEach(e => grandTwdTotal += Math.round(e.amount * e.rate));
+    filteredExpenses.forEach(e => {
+      dayForeignTotal += e.amount;
+      dayTwdTotal += Math.round(e.amount * e.rate);
+    });
+
+    document.getElementById('dayTotalForeign').textContent = dayForeignTotal.toLocaleString();
+    document.getElementById('dayTotalTWD').textContent = `≈ NT$ ${dayTwdTotal.toLocaleString()}`;
+    document.getElementById('grandTotalTWD').textContent = `NT$ ${grandTwdTotal.toLocaleString()}`;
+
+    const itemList = document.getElementById('itemList');
+    itemList.innerHTML = '';
+
+    if (filteredExpenses.length === 0) {
+      itemList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">尚無記帳資料</div>';
+      return;
+    }
+
+    [...filteredExpenses].reverse().forEach(item => {
+      const twdVal = Math.round(item.amount * item.rate);
+      const el = document.createElement('div');
+      el.className = 'expense-item';
+      el.innerHTML = `
+        ${item.photo ? `<img src="${item.photo}" class="item-thumb" onclick="showModal('${item.photo}')">` : ''}
+        <div class="item-info">
+          <div class="item-title">${escapeHtml(item.title)}</div>
+          <div class="item-meta">${item.date}</div>
+        </div>
+        <div class="item-amount">
+          <div class="amount-foreign">${item.amount.toLocaleString()} ${item.currency}</div>
+          <div class="amount-twd">≈ NT$ ${twdVal.toLocaleString()}</div>
+        </div>
+        <button class="btn-delete" onclick="deleteExpense(${item.id})">×</button>
+      `;
+      itemList.appendChild(el);
+    });
+  }
+
+  // ================= 收據辨識與拆帳邏輯 =================
   function renderMembers() {
     localStorage.setItem('split_members', JSON.stringify(members));
     const container = document.getElementById('memberTagsList');
@@ -210,7 +512,7 @@
       tag.innerHTML = `${m} <button onclick="removeMember(${idx})">×</button>`;
       container.appendChild(tag);
     });
-    renderItems();
+    renderSplitItems();
   }
 
   function addMember() {
@@ -228,19 +530,19 @@
     renderMembers();
   }
 
-  // AI 圖像辨識 (使用 Vision API)
+  // AI 辨識（強化中文與通用收據Prompt）
   async function processReceipt(input) {
     if (!input.files || !input.files[0]) return;
     const file = input.files[0];
     const apiKey = document.getElementById('apiKeyInput').value.trim();
 
     if (!apiKey) {
-      alert('提示：未輸入 API Key。系統將預設建立範例項目，您可以手動修改金額與品名！');
-      items = [
-        { id: 1, name: '日式拉麵 (範例)', price: 1200, assignedMembers: [...members] },
-        { id: 2, name: '煎餃 (範例)', price: 450, assignedMembers: members.length > 0 ? [members[0]] : [] }
+      alert('提示：未輸入 API Key。系統已為您建立範例項目，您可以直接手動輸入金額與品名！');
+      splitItems = [
+        { id: 1, name: '餐點/商品 A (範例)', price: 1200, assignedMembers: [...members] },
+        { id: 2, name: '飲料 B (範例)', price: 350, assignedMembers: members.length > 0 ? [members[0]] : [] }
       ];
-      renderItems();
+      renderSplitItems();
       return;
     }
 
@@ -260,7 +562,14 @@
             {
               role: 'user',
               content: [
-                { type: 'text', text: '請辨識這張收據/發票的項目明細與金額。將所有項目名稱翻譯成繁體中文。請務必僅輸出 JSON 格式，範例：[{"name":"炸雞","price":800},{"name":"烏龍麵","price":650}]。請勿輸出額外的文字 Markdown。' },
+                { 
+                  type: 'text', 
+                  text: '請精確辨識這張收據/發票/明細表中的所有商品與服務項目及其金額。\n' +
+                        '注意：不論收據是中文、日文、英文或韓文，請一律將項目名稱翻譯並整理成「繁體中文」。\n' +
+                        '請嚴格僅輸出 JSON 陣列格式，格式如下：\n' +
+                        '[{"name":"項目中文名稱","price":數字金額}]\n' +
+                        '不要包含任何 Markdown 標記或額外說明文字。' 
+                },
                 { type: 'image_url', image_url: { url: base64Image } }
               ]
             }
@@ -277,19 +586,19 @@
         content = content.replace(/```json/g, '').replace(/```/g, '').trim();
         const parsedItems = JSON.parse(content);
         
-        items = parsedItems.map((it, idx) => ({
+        splitItems = parsedItems.map((it, idx) => ({
           id: Date.now() + idx,
           name: it.name,
           price: parseFloat(it.price) || 0,
-          assignedMembers: [...members] // 預設全員平分
+          assignedMembers: [...members]
         }));
-        renderItems();
+        renderSplitItems();
       } else {
         alert('辨識失敗，請檢查 API Key 是否正確。');
       }
     } catch (err) {
       document.getElementById('loadingSpinner').style.display = 'none';
-      alert('辨識過程發生錯誤：' + err.message);
+      alert('辨識發生錯誤：' + err.message);
     }
   }
 
@@ -302,39 +611,39 @@
     });
   }
 
-  function manualAddItem() {
-    items.push({
+  function manualAddSplitItem() {
+    splitItems.push({
       id: Date.now(),
-      name: '自訂項目',
+      name: '自訂品項',
       price: 0,
       assignedMembers: [...members]
     });
-    renderItems();
+    renderSplitItems();
   }
 
-  function renderItems() {
-    const card = document.getElementById('itemsCard');
-    const container = document.getElementById('itemsContainer');
+  function renderSplitItems() {
+    const card = document.getElementById('splitItemsCard');
+    const container = document.getElementById('splitItemsContainer');
     
-    if (items.length === 0) {
+    if (splitItems.length === 0) {
       card.style.display = 'none';
-      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('splitResultCard').style.display = 'none';
       return;
     }
 
     card.style.display = 'block';
     container.innerHTML = '';
 
-    items.forEach((item) => {
+    splitItems.forEach((item) => {
       const row = document.createElement('div');
-      row.className = 'item-row';
+      row.className = 'split-item-row';
       row.innerHTML = `
-        <div class="item-header">
-          <input type="text" class="form-control" value="${item.name}" style="flex:2; font-weight:bold;" onchange="updateItemName(${item.id}, this.value)">
-          <input type="number" class="form-control" value="${item.price}" style="flex:1; text-align:right; margin-left:8px;" onchange="updateItemPrice(${item.id}, this.value)">
-          <button style="background:none; border:none; color:#e74c3c; margin-left:8px; font-size:1.2em; cursor:pointer;" onclick="removeItem(${item.id})">×</button>
+        <div class="split-item-header">
+          <input type="text" class="form-control" value="${escapeHtml(item.name)}" style="flex:2; font-weight:bold;" onchange="updateSplitItemName(${item.id}, this.value)">
+          <input type="number" class="form-control" value="${item.price}" style="flex:1; text-align:right;" onchange="updateSplitItemPrice(${item.id}, this.value)">
+          <button style="background:none; border:none; color:var(--danger); font-size:1.2em; cursor:pointer;" onclick="removeSplitItem(${item.id})">×</button>
         </div>
-        <div class="item-members">
+        <div class="member-check-group">
           ${members.map(m => {
             const isSelected = item.assignedMembers.includes(m);
             return `<div class="member-check-btn ${isSelected ? 'selected' : ''}" onclick="toggleMemberAssign(${item.id}, '${m}')">${m}</div>`;
@@ -347,24 +656,24 @@
     calculateSplit();
   }
 
-  function updateItemName(id, val) {
-    const item = items.find(i => i.id === id);
+  function updateSplitItemName(id, val) {
+    const item = splitItems.find(i => i.id === id);
     if (item) item.name = val;
   }
 
-  function updateItemPrice(id, val) {
-    const item = items.find(i => i.id === id);
+  function updateSplitItemPrice(id, val) {
+    const item = splitItems.find(i => i.id === id);
     if (item) item.price = parseFloat(val) || 0;
     calculateSplit();
   }
 
-  function removeItem(id) {
-    items = items.filter(i => i.id !== id);
-    renderItems();
+  function removeSplitItem(id) {
+    splitItems = splitItems.filter(i => i.id !== id);
+    renderSplitItems();
   }
 
   function toggleMemberAssign(itemId, memberName) {
-    const item = items.find(i => i.id === itemId);
+    const item = splitItems.find(i => i.id === itemId);
     if (!item) return;
 
     if (item.assignedMembers.includes(memberName)) {
@@ -372,18 +681,15 @@
     } else {
       item.assignedMembers.push(memberName);
     }
-    renderItems();
+    renderSplitItems();
   }
 
-  // 計算每個人的人頭費
   function calculateSplit() {
-    const rate = parseFloat(document.getElementById('rateInput').value) || 1;
     const totals = {};
     members.forEach(m => totals[m] = 0);
-
     let grandTotalForeign = 0;
 
-    items.forEach(item => {
+    splitItems.forEach(item => {
       grandTotalForeign += item.price;
       if (item.assignedMembers.length > 0) {
         const splitPrice = item.price / item.assignedMembers.length;
@@ -393,72 +699,123 @@
       }
     });
 
-    const resultCard = document.getElementById('resultCard');
-    const resultList = document.getElementById('splitResultList');
+    const card = document.getElementById('splitResultCard');
+    const container = document.getElementById('splitResultList');
 
-    if (items.length === 0) {
-      resultCard.style.display = 'none';
+    if (splitItems.length === 0) {
+      card.style.display = 'none';
       return;
     }
 
-    resultCard.style.display = 'block';
-    resultList.innerHTML = '';
+    card.style.display = 'block';
+    container.innerHTML = '';
 
     members.forEach(m => {
       const foreignVal = Math.round(totals[m] * 100) / 100;
-      const twdVal = Math.round(foreignVal * rate);
+      const twdVal = Math.round(foreignVal * settings.rate);
       const row = document.createElement('div');
-      row.className = 'result-row';
+      row.className = 'split-result-row';
       row.innerHTML = `
         <span>👤 ${m}</span>
-        <span>${foreignVal.toLocaleString()} 外幣 (≈ NT$ ${twdVal.toLocaleString()})</span>
+        <span>${foreignVal.toLocaleString()} ${settings.currency} (≈ NT$ ${twdVal.toLocaleString()})</span>
       `;
-      resultList.appendChild(row);
+      container.appendChild(row);
     });
 
-    // 總計列
-    const grandTwd = Math.round(grandTotalForeign * rate);
+    const grandTwd = Math.round(grandTotalForeign * settings.rate);
     const totalRow = document.createElement('div');
-    totalRow.className = 'result-row';
+    totalRow.className = 'split-result-row';
     totalRow.style.marginTop = '8px';
     totalRow.style.paddingTop = '8px';
     totalRow.style.borderTop = '2px solid var(--border)';
+    totalRow.style.fontWeight = 'bold';
     totalRow.innerHTML = `
-      <span>總計金額</span>
-      <span>${grandTotalForeign.toLocaleString()} 外幣 (≈ NT$ ${grandTwd.toLocaleString()})</span>
+      <span>收據總計</span>
+      <span>${grandTotalForeign.toLocaleString()} ${settings.currency} (≈ NT$ ${grandTwd.toLocaleString()})</span>
     `;
-    resultList.appendChild(totalRow);
+    container.appendChild(totalRow);
   }
 
-  // 寫入主記帳本 LocalStorage
-  function saveToMainExpenses() {
-    const rate = parseFloat(document.getElementById('rateInput').value) || 1;
-    let mainExpenses = JSON.parse(localStorage.getItem('travel_expenses')) || [];
+  // 匯入每日記帳
+  function importSplitToDaily() {
     const today = new Date().toISOString().split('T')[0];
+    let importedCount = 0;
 
     members.forEach(m => {
       let personTotal = 0;
-      items.forEach(item => {
+      splitItems.forEach(item => {
         if (item.assignedMembers.includes(m)) {
           personTotal += item.price / item.assignedMembers.length;
         }
       });
 
       if (personTotal > 0) {
-        mainExpenses.push({
+        expenses.push({
           id: Date.now() + Math.random(),
           date: today,
-          title: `[分帳] ${m} 的消費分攤`,
+          title: `[收據拆帳] ${m} 的分攤費用`,
           amount: Math.round(personTotal * 100) / 100,
-          rate: rate,
-          currency: 'FOREIGN',
+          rate: settings.rate,
+          currency: settings.currency,
           photo: null
         });
+        importedCount++;
       }
     });
 
-    localStorage.setItem('travel_expenses', JSON.stringify(mainExpenses));
-    alert('✅ 已將每位成員的分帳金額寫入主記帳本！');
+    localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+    renderDaily();
+    alert(`✅ 已將 ${importedCount} 位成員的分帳結果同步至「每日記帳」！`);
+    switchTab('daily');
+  }
+
+  function showModal(src) {
+    document.getElementById('modalImg').src = src;
+    document.getElementById('imageModal').style.display = 'flex';
+  }
+
+  function escapeHtml(text) {
+    return text.replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m]));
+  }
+
+  function exportData() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ expenses, settings, members }));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `travel_backup_${new Date().toISOString().split('T')[0]}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+  }
+
+  function importData() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'application/json';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = event => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported.expenses) {
+            expenses = imported.expenses;
+            if (imported.settings) settings = imported.settings;
+            if (imported.members) members = imported.members;
+            localStorage.setItem('travel_expenses', JSON.stringify(expenses));
+            localStorage.setItem('travel_settings', JSON.stringify(settings));
+            localStorage.setItem('split_members', JSON.stringify(members));
+            renderDaily();
+            renderMembers();
+            alert('資料匯入成功！');
+          }
+        } catch (err) {
+          alert('匯入失敗，請確認檔案格式。');
+        }
+      };
+      reader.readAsText(file);
+    };
+    input.click();
   }
 </script>
 
