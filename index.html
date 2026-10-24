@@ -36,6 +36,7 @@ body {
   color: var(--text);
   padding-bottom: 40px;
   -webkit-font-smoothing: antialiased;
+  font-size: 15px; /* 全域字體放大 */
 }
 
 button, input, textarea {
@@ -101,22 +102,22 @@ textarea:focus-visible {
 }
 
 .brand {
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 2px;
   color: #b6cce4;
   font-weight: 700;
 }
 
 .header-badge {
-  font-size: 11px;
+  font-size: 13px;
   border: 1px solid rgba(255,255,255,.22);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 20px;
   color: #d8e8f6;
 }
 
 .app-header h1 {
-  font-size: clamp(25px, 5vw, 34px);
+  font-size: clamp(28px, 5vw, 36px);
   margin-top: 20px;
   letter-spacing: .5px;
 }
@@ -124,7 +125,7 @@ textarea:focus-visible {
 .header-subtitle {
   margin-top: 8px;
   color: #c0d1e4;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .nav-wrap {
@@ -149,9 +150,9 @@ textarea:focus-visible {
   border: none;
   background: transparent;
   color: var(--muted);
-  padding: 13px 8px;
+  padding: 14px 8px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   transition: .2s ease;
 }
@@ -187,7 +188,7 @@ textarea:focus-visible {
   background: var(--card);
   border: 1px solid rgba(226,233,243,.7);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 22px;
   margin-bottom: 16px;
   box-shadow: var(--shadow);
 }
@@ -198,7 +199,7 @@ textarea:focus-visible {
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 17px;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 800;
 }
 
@@ -209,14 +210,14 @@ textarea:focus-visible {
 }
 
 .title-icon {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: var(--primary-light);
   border-radius: 11px;
-  font-size: 17px;
+  font-size: 19px;
   flex-shrink: 0;
 }
 
@@ -229,7 +230,7 @@ textarea:focus-visible {
 }
 
 .settings-label {
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
 }
 
@@ -238,28 +239,44 @@ textarea:focus-visible {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
 }
 
 .settings-controls input {
-  width: 88px;
+  width: 90px;
   min-width: 0;
-  padding: 8px;
+  padding: 8px 10px;
   background: #f7f9fc;
   border: 1px solid var(--border);
   border-radius: 9px;
   color: var(--text);
+  font-weight: 700;
 }
 
 .settings-controls #exchangeRate {
-  width: 78px;
+  width: 80px;
+}
+
+.currency-presets {
+  display: flex;
+  gap: 6px;
+}
+
+.preset-btn {
+  border: 1px solid var(--border);
+  background: #f0f4f9;
+  color: var(--primary);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .summary-card {
   background: linear-gradient(135deg, #193b63, #254f7d);
   color: white;
-  padding: 23px 20px;
+  padding: 24px 20px;
   border: none;
   position: relative;
   overflow: hidden;
@@ -278,20 +295,20 @@ textarea:focus-visible {
 }
 
 .summary-heading {
-  font-size: 12px;
+  font-size: 14px;
   color: #ccdaeb;
   margin-bottom: 7px;
 }
 
 .summary-main {
-  font-size: clamp(28px, 6vw, 37px);
+  font-size: clamp(32px, 6vw, 42px);
   font-weight: 800;
   letter-spacing: -.5px;
   overflow-wrap: anywhere;
 }
 
 .summary-currency {
-  font-size: 12px;
+  font-size: 14px;
   color: #d3e0ee;
   margin-top: 5px;
 }
@@ -318,12 +335,12 @@ textarea:focus-visible {
 }
 
 .summary-item .label {
-  font-size: 11px;
+  font-size: 13px;
   color: #ccdaeb;
 }
 
 .summary-item .value {
-  font-size: 19px;
+  font-size: 21px;
   font-weight: 800;
   margin-top: 6px;
   overflow-wrap: anywhere;
@@ -343,9 +360,9 @@ textarea:focus-visible {
   border-radius: 12px;
   background: white;
   color: var(--muted);
-  padding: 10px 15px;
+  padding: 10px 16px;
   white-space: nowrap;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
   transition: .2s ease;
 }
@@ -370,7 +387,7 @@ textarea:focus-visible {
 .form-group label {
   display: block;
   margin-bottom: 7px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--muted);
 }
@@ -378,12 +395,12 @@ textarea:focus-visible {
 .form-control {
   width: 100%;
   min-width: 0;
-  padding: 12px 13px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: 11px;
   color: var(--text);
   background: #f9fbfd;
-  font-size: 14px;
+  font-size: 15px;
   transition: border-color .2s, background .2s;
 }
 
@@ -399,7 +416,7 @@ textarea:focus-visible {
 
 input[type="file"].form-control {
   padding: 9px;
-  font-size: 11px;
+  font-size: 13px;
 }
 
 textarea.form-control {
@@ -412,9 +429,9 @@ textarea.form-control {
   border: none;
   background: var(--primary);
   color: white;
-  padding: 13px 16px;
+  padding: 14px 16px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   transition: transform .15s, filter .15s;
 }
@@ -440,7 +457,8 @@ textarea.form-control {
 .btn-small {
   width: auto;
   white-space: nowrap;
-  padding: 10px 14px;
+  padding: 10px 16px;
+  font-size: 14px;
 }
 
 .expense-list {
@@ -453,7 +471,7 @@ textarea.form-control {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 15px;
+  padding: 16px;
   background: white;
   border: 1px solid rgba(226,233,243,.7);
   border-radius: 16px;
@@ -466,8 +484,8 @@ textarea.form-control {
 }
 
 .item-thumb {
-  width: 53px;
-  height: 53px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
   border-radius: 12px;
   object-fit: cover;
@@ -475,15 +493,15 @@ textarea.form-control {
 }
 
 .item-icon {
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 13px;
   background: var(--primary-light);
-  font-size: 21px;
+  font-size: 22px;
 }
 
 .item-info {
@@ -492,7 +510,7 @@ textarea.form-control {
 }
 
 .item-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
   overflow-wrap: anywhere;
 }
@@ -500,7 +518,7 @@ textarea.form-control {
 .item-meta {
   margin-top: 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
 .item-amount {
@@ -510,28 +528,42 @@ textarea.form-control {
 }
 
 .amount-foreign {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
 }
 
 .amount-twd {
   margin-top: 5px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 13px;
 }
 
-.btn-delete {
+.item-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-edit, .btn-delete {
   border: none;
-  background: #fff0f0;
-  color: var(--danger);
-  width: 29px;
-  height: 29px;
+  width: 32px;
+  height: 32px;
   flex-shrink: 0;
   border-radius: 9px;
-  font-size: 19px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.btn-edit {
+  background: var(--primary-light);
+  color: var(--primary);
+}
+
+.btn-delete {
+  background: #fff0f0;
+  color: var(--danger);
+  font-size: 20px;
 }
 
 .empty-state {
@@ -541,12 +573,12 @@ textarea.form-control {
   border-radius: 17px;
   border: 1px dashed #d7e0ec;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 2;
 }
 
 .empty-icon {
-  font-size: 34px;
+  font-size: 36px;
   margin-bottom: 8px;
 }
 
@@ -559,12 +591,12 @@ textarea.form-control {
 }
 
 .backup-tools button {
-  padding: 10px 13px;
+  padding: 10px 16px;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: white;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -584,12 +616,12 @@ textarea.form-control {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 11px;
+  padding: 8px 13px;
   border: 1px solid #c6f0e2;
   border-radius: 11px;
   background: #e9faf4;
   color: #247c62;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -597,7 +629,7 @@ textarea.form-control {
   border: none;
   background: transparent;
   color: var(--danger);
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1;
 }
 
@@ -625,7 +657,7 @@ textarea.form-control {
 }
 
 .split-item-row {
-  padding: 15px 0;
+  padding: 16px 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -651,10 +683,33 @@ textarea.form-control {
   text-align: right;
 }
 
+.split-mode-selector {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  align-items: center;
+}
+
+.split-mode-btn {
+  border: 1px solid var(--border);
+  background: #f0f4f9;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.split-mode-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
 .member-check-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 8px;
 }
 
 .member-check-btn {
@@ -662,8 +717,8 @@ textarea.form-control {
   border-radius: 10px;
   background: #f8fafc;
   color: var(--muted);
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 8px 14px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -673,14 +728,39 @@ textarea.form-control {
   color: #247c62;
 }
 
+.custom-split-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.custom-split-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.custom-split-row input {
+  width: 100px;
+  padding: 6px 8px;
+  font-size: 13px;
+  text-align: right;
+}
+
 .split-result-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 13px 0;
+  padding: 14px 0;
   border-bottom: 1px solid var(--border);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .split-result-row:last-child {
@@ -715,7 +795,7 @@ textarea.form-control {
   margin-top: -8px;
   margin-bottom: 15px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.7;
 }
 
@@ -730,11 +810,21 @@ textarea.form-control {
   padding: 20px;
 }
 
+.modal-content {
+  background: white;
+  width: 100%;
+  max-width: 450px;
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
 .modal img {
   display: block;
   max-width: 100%;
   max-height: 85vh;
   border-radius: 14px;
+  margin: auto;
 }
 
 .toast {
@@ -747,7 +837,7 @@ textarea.form-control {
   background: #183653;
   color: white;
   border-radius: 12px;
-  font-size: 13px;
+  font-size: 14px;
   box-shadow: var(--shadow);
   opacity: 0;
   pointer-events: none;
@@ -775,7 +865,7 @@ textarea.form-control {
   }
 
   .card {
-    padding: 16px;
+    padding: 18px;
     border-radius: 17px;
   }
 
@@ -796,36 +886,36 @@ textarea.form-control {
   }
 
   .summary-item .value {
-    font-size: 16px;
+    font-size: 18px;
   }
 
   .expense-item {
     gap: 9px;
-    padding: 12px 10px;
+    padding: 14px 12px;
   }
 
   .item-thumb {
-    width: 43px;
-    height: 43px;
+    width: 48px;
+    height: 48px;
   }
 
   .item-icon {
-    width: 39px;
-    height: 39px;
-    font-size: 18px;
+    width: 42px;
+    height: 42px;
+    font-size: 20px;
   }
 
   .amount-foreign {
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .item-title {
-    font-size: 13px;
+    font-size: 15px;
   }
 
-  .btn-delete {
-    width: 26px;
-    height: 26px;
+  .btn-delete, .btn-edit {
+    width: 30px;
+    height: 30px;
   }
 
   .settings-card {
@@ -850,7 +940,7 @@ textarea.form-control {
 
   .split-add-row .form-control {
     padding: 11px 9px;
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
@@ -893,6 +983,10 @@ textarea.form-control {
   <section class="card settings-card">
     <div class="settings-label">⚙️ 幣別與匯率</div>
     <div class="settings-controls">
+      <div class="currency-presets">
+        <button class="preset-btn" onclick="setQuickCurrency('JPY', 0.21)">日幣 (JPY)</button>
+        <button class="preset-btn" onclick="setQuickCurrency('TWD', 1)">台幣 (TWD)</button>
+      </div>
       <span>幣別</span>
       <input
         type="text"
@@ -1000,7 +1094,7 @@ textarea.form-control {
           <span class="title-icon">🧾</span>
           消費明細
         </div>
-        <span id="expenseCount" style="font-size:11px;color:var(--muted)">
+        <span id="expenseCount" style="font-size:13px;color:var(--muted)">
           0 筆紀錄
         </span>
       </div>
@@ -1023,7 +1117,7 @@ textarea.form-control {
           <span class="title-icon">👥</span>
           旅行成員
         </div>
-        <span style="font-size:11px;color:var(--muted)" id="memberCount">
+        <span style="font-size:13px;color:var(--muted)" id="memberCount">
           3 位成員
         </span>
       </div>
@@ -1107,16 +1201,17 @@ textarea.form-control {
         </div>
       </div>
 
-      <p class="section-caption">點擊成員按鈕即可切換是否參與該筆消費，金額將平均分攤。</p>
+      <p class="section-caption">選擇分攤方式或切換成員，也可直接自訂個人分攤金額。</p>
 
       <div id="splitItemsContainer"></div>
     </section>
 
+    <!-- 分帳成員總金額彙整 -->
     <section class="card" id="splitResultCard" style="display:none">
       <div class="card-title">
         <div class="title-left">
           <span class="title-icon">💰</span>
-          個人分帳結算
+          分帳成員總金額彙整
         </div>
       </div>
 
@@ -1132,8 +1227,38 @@ textarea.form-control {
   </section>
 </main>
 
+<!-- 圖片預覽 Modal -->
 <div class="modal" id="imageModal" role="dialog" aria-label="收據照片預覽">
   <img id="modalImg" src="" alt="收據照片預覽">
+</div>
+
+<!-- 明細編輯 Modal -->
+<div class="modal" id="editModal" role="dialog" aria-label="編輯消費紀錄">
+  <div class="modal-content">
+    <div class="card-title">
+      <div class="title-left">
+        <span class="title-icon">✏️</span>
+        編輯消費紀錄
+      </div>
+    </div>
+    <input type="hidden" id="editExpenseId">
+    <div class="form-group">
+      <label for="editDate">消費日期</label>
+      <input type="date" id="editDate" class="form-control">
+    </div>
+    <div class="form-group">
+      <label for="editTitle">消費項目</label>
+      <input type="text" id="editTitle" class="form-control" maxlength="150">
+    </div>
+    <div class="form-group">
+      <label for="editAmount">金額（外幣）</label>
+      <input type="number" id="editAmount" class="form-control" min="0.01" step="any">
+    </div>
+    <div style="display:flex; gap:10px; margin-top:18px;">
+      <button class="btn-submit btn-secondary" onclick="closeEditModal()">取消</button>
+      <button class="btn-submit" onclick="saveEditedExpense()">儲存修改</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1227,7 +1352,10 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("imageModal").addEventListener("click", closeModal);
 
   document.addEventListener("keydown", event => {
-    if (event.key === "Escape") closeModal();
+    if (event.key === "Escape") {
+      closeModal();
+      closeEditModal();
+    }
   });
 
   document.getElementById("newMemberInput").addEventListener("keydown", event => {
@@ -1265,8 +1393,14 @@ function switchTab(tabName) {
 }
 
 /* =========================
-   幣別與匯率
+   幣別與匯率切換
 ========================= */
+
+function setQuickCurrency(currency, rate) {
+  document.getElementById("currencySymbol").value = currency;
+  document.getElementById("exchangeRate").value = rate;
+  updateSettings();
+}
 
 function updateSettings() {
   const currencyInput = document.getElementById("currencySymbol");
@@ -1409,6 +1543,46 @@ function deleteExpense(id) {
   showToast("已刪除這筆記帳");
 }
 
+/* 編輯明細功能 */
+function openEditModal(id) {
+  const item = expenses.find(e => e.id === id);
+  if (!item) return;
+
+  document.getElementById("editExpenseId").value = item.id;
+  document.getElementById("editDate").value = item.date;
+  document.getElementById("editTitle").value = item.title;
+  document.getElementById("editAmount").value = item.amount;
+
+  document.getElementById("editModal").style.display = "flex";
+}
+
+function closeEditModal() {
+  document.getElementById("editModal").style.display = "none";
+}
+
+function saveEditedExpense() {
+  const id = Number(document.getElementById("editExpenseId").value);
+  const date = document.getElementById("editDate").value;
+  const title = document.getElementById("editTitle").value.trim();
+  const amount = Number(document.getElementById("editAmount").value);
+
+  if (!date || !title || !Number.isFinite(amount) || amount <= 0) {
+    showToast("請填寫完整資訊與有效金額");
+    return;
+  }
+
+  const item = expenses.find(e => e.id === id);
+  if (item) {
+    item.date = date;
+    item.title = title;
+    item.amount = amount;
+    saveExpenses();
+    renderDaily();
+    closeEditModal();
+    showToast("已更新消費明細！");
+  }
+}
+
 function renderDaily() {
   document.querySelectorAll(".curr-name").forEach(element => {
     element.textContent = settings.currency;
@@ -1527,13 +1701,20 @@ function renderDaily() {
         </div>
         <div class="amount-twd">≈ ${formatTWD(twdValue)}</div>
       </div>
-      <button class="btn-delete" aria-label="刪除這筆記帳">×</button>
+      <div class="item-actions">
+        <button class="btn-edit" aria-label="編輯這筆記帳">✏️</button>
+        <button class="btn-delete" aria-label="刪除這筆記帳">×</button>
+      </div>
     `;
 
     const thumb = element.querySelector(".item-thumb");
     if (thumb) {
       thumb.addEventListener("click", () => showModal(item.photo));
     }
+
+    element.querySelector(".btn-edit").addEventListener("click", () => {
+      openEditModal(item.id);
+    });
 
     element.querySelector(".btn-delete").addEventListener("click", () => {
       deleteExpense(item.id);
@@ -1601,11 +1782,13 @@ function removeMember(index) {
 
   members.splice(index, 1);
 
-  // 同時移除其分帳資格，避免殘留資料。
   splitItems.forEach(item => {
     item.assignedMembers = item.assignedMembers.filter(
       member => member !== name
     );
+    if (item.customAmounts) {
+      delete item.customAmounts[name];
+    }
   });
 
   renderMembers();
@@ -1633,16 +1816,6 @@ function parseAndImportText() {
     const cleanLine = line.trim();
     if (!cleanLine) return;
 
-    /*
-      支援：
-      拉麵 1200
-      拉麵：1200
-      拉麵: 1,200
-      拉麵 = 1200
-      拉麵 / 1200
-      1200 拉麵
-    */
-
     const match = cleanLine.match(
       /^(.+?)\s*(?::|：|=|\/|\t|\s)\s*([0-9][0-9,]*(?:\.[0-9]+)?)\s*(?:元|円|日圓|日元)?$/i
     );
@@ -1669,7 +1842,9 @@ function parseAndImportText() {
         id: Date.now() + Math.random(),
         name,
         price,
-        assignedMembers: [...members]
+        splitMode: 'even', // even: 均分, custom: 自訂
+        assignedMembers: [...members],
+        customAmounts: {}
       });
 
       importedCount++;
@@ -1713,7 +1888,9 @@ function addSplitItem() {
     id: Date.now() + Math.random(),
     name,
     price,
-    assignedMembers: [...members]
+    splitMode: 'even',
+    assignedMembers: [...members],
+    customAmounts: {}
   });
 
   nameInput.value = "";
@@ -1745,6 +1922,21 @@ function removeSplitItem(id) {
   splitItems = splitItems.filter(item => item.id !== id);
   renderSplitItems();
   showToast("已移除消費項目");
+}
+
+function toggleSplitMode(itemId, mode) {
+  const item = splitItems.find(entry => entry.id === itemId);
+  if (!item) return;
+  item.splitMode = mode;
+  renderSplitItems();
+}
+
+function updateCustomAmount(itemId, member, amount) {
+  const item = splitItems.find(entry => entry.id === itemId);
+  if (!item) return;
+  if (!item.customAmounts) item.customAmounts = {};
+  item.customAmounts[member] = Number(amount) || 0;
+  calculateSplit();
 }
 
 function toggleMemberAssign(itemId, memberName) {
@@ -1779,6 +1971,8 @@ function renderSplitItems() {
     const row = document.createElement("div");
     row.className = "split-item-row";
 
+    const isEven = item.splitMode !== 'custom';
+
     row.innerHTML = `
       <div class="split-item-header">
         <input
@@ -1798,7 +1992,14 @@ function renderSplitItems() {
         >
         <button class="btn-delete" aria-label="刪除消費項目">×</button>
       </div>
-      <div class="member-check-group"></div>
+
+      <div class="split-mode-selector">
+        <span>分攤方式：</span>
+        <button class="split-mode-btn ${isEven ? 'active' : ''}" onclick="toggleSplitMode(${item.id}, 'even')">平分</button>
+        <button class="split-mode-btn ${!isEven ? 'active' : ''}" onclick="toggleSplitMode(${item.id}, 'custom')">直接填寫金額</button>
+      </div>
+
+      ${isEven ? `<div class="member-check-group"></div>` : `<div class="custom-split-inputs"></div>`}
     `;
 
     row.querySelector(".name-control").addEventListener("change", event => {
@@ -1813,23 +2014,42 @@ function renderSplitItems() {
       removeSplitItem(item.id);
     });
 
-    const group = row.querySelector(".member-check-group");
+    if (isEven) {
+      const group = row.querySelector(".member-check-group");
+      members.forEach(member => {
+        const button = document.createElement("button");
+        const selected = item.assignedMembers.includes(member);
 
-    members.forEach(member => {
-      const button = document.createElement("button");
-      const selected = item.assignedMembers.includes(member);
+        button.type = "button";
+        button.className = "member-check-btn" + (selected ? " selected" : "");
+        button.textContent = (selected ? "✓ " : "") + member;
+        button.setAttribute("aria-pressed", String(selected));
 
-      button.type = "button";
-      button.className = "member-check-btn" + (selected ? " selected" : "");
-      button.textContent = (selected ? "✓ " : "") + member;
-      button.setAttribute("aria-pressed", String(selected));
+        button.addEventListener("click", () => {
+          toggleMemberAssign(item.id, member);
+        });
 
-      button.addEventListener("click", () => {
-        toggleMemberAssign(item.id, member);
+        group.appendChild(button);
       });
-
-      group.appendChild(button);
-    });
+    } else {
+      const customContainer = row.querySelector(".custom-split-inputs");
+      members.forEach(member => {
+        const customRow = document.createElement("div");
+        customRow.className = "custom-split-row";
+        const currentVal = item.customAmounts?.[member] ?? 0;
+        customRow.innerHTML = `
+          <span>👤 ${escapeHtml(member)}</span>
+          <div>
+            <input type="number" class="form-control" min="0" step="any" value="${currentVal}" placeholder="0">
+            <span>${escapeHtml(settings.currency)}</span>
+          </div>
+        `;
+        customRow.querySelector("input").addEventListener("input", (e) => {
+          updateCustomAmount(item.id, member, e.target.value);
+        });
+        customContainer.appendChild(customRow);
+      });
+    }
 
     container.appendChild(row);
   });
@@ -1838,7 +2058,7 @@ function renderSplitItems() {
 }
 
 /* =========================
-   分帳計算
+   分帳計算與成員總額彙整
 ========================= */
 
 function calculateSplit() {
@@ -1857,22 +2077,28 @@ function calculateSplit() {
 
   splitItems.forEach(item => {
     const price = Number(item.price);
-
     if (!Number.isFinite(price) || price < 0) return;
 
     grandTotal += price;
 
-    const assigned = item.assignedMembers.filter(
-      member => Object.prototype.hasOwnProperty.call(totals, member)
-    );
+    if (item.splitMode === 'custom') {
+      members.forEach(member => {
+        const amt = Number(item.customAmounts?.[member] || 0);
+        totals[member] += amt;
+      });
+    } else {
+      const assigned = item.assignedMembers.filter(
+        member => Object.prototype.hasOwnProperty.call(totals, member)
+      );
 
-    if (assigned.length === 0) return;
+      if (assigned.length === 0) return;
 
-    const share = price / assigned.length;
+      const share = price / assigned.length;
 
-    assigned.forEach(member => {
-      totals[member] += share;
-    });
+      assigned.forEach(member => {
+        totals[member] += share;
+      });
+    }
   });
 
   container.innerHTML = "";
@@ -1885,7 +2111,7 @@ function calculateSplit() {
     row.className = "split-result-row";
 
     row.innerHTML = `
-      <span class="person-name">👤 ${escapeHtml(member)}</span>
+      <span class="person-name">👤 ${escapeHtml(member)} 應付總額</span>
       <span class="person-total">
         ${formatNumber(amount)} ${escapeHtml(settings.currency)}
         <small>約 ${formatTWD(twd)}</small>
@@ -1896,15 +2122,12 @@ function calculateSplit() {
   });
 
   const totalTwd = Math.round(grandTotal * Number(settings.rate));
-  const unassignedCount = splitItems.filter(
-    item => !item.assignedMembers.some(member => members.includes(member))
-  ).length;
 
   const totalRow = document.createElement("div");
   totalRow.className = "split-result-row total-row";
 
   totalRow.innerHTML = `
-    <span>總消費金額</span>
+    <span>所有項目總花費</span>
     <span class="person-total">
       ${formatNumber(grandTotal)} ${escapeHtml(settings.currency)}
       <small>約 ${formatTWD(totalTwd)}</small>
@@ -1912,16 +2135,6 @@ function calculateSplit() {
   `;
 
   container.appendChild(totalRow);
-
-  if (unassignedCount > 0) {
-    const warning = document.createElement("div");
-    warning.style.cssText =
-      "margin-top:12px;padding:12px;border-radius:10px;background:#fff6e8;color:#99651c;font-size:12px;line-height:1.7";
-    warning.textContent =
-      `提醒：有 ${unassignedCount} 筆消費尚未選擇分攤成員，這些金額不會計入任何人的應付金額。`;
-
-    container.appendChild(warning);
-  }
 }
 
 /* =========================
@@ -1939,20 +2152,25 @@ function importSplitToDaily() {
 
   splitItems.forEach(item => {
     const price = Number(item.price);
-
     if (!Number.isFinite(price) || price <= 0) return;
 
-    const assigned = item.assignedMembers.filter(
-      member => Object.prototype.hasOwnProperty.call(totals, member)
-    );
+    if (item.splitMode === 'custom') {
+      members.forEach(member => {
+        totals[member] += Number(item.customAmounts?.[member] || 0);
+      });
+    } else {
+      const assigned = item.assignedMembers.filter(
+        member => Object.prototype.hasOwnProperty.call(totals, member)
+      );
 
-    if (assigned.length === 0) return;
+      if (assigned.length === 0) return;
 
-    const share = price / assigned.length;
+      const share = price / assigned.length;
 
-    assigned.forEach(member => {
-      totals[member] += share;
-    });
+      assigned.forEach(member => {
+        totals[member] += share;
+      });
+    }
   });
 
   const records = members
