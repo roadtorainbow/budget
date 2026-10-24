@@ -36,10 +36,10 @@ body {
   color: var(--text);
   padding-bottom: 40px;
   -webkit-font-smoothing: antialiased;
-  font-size: 15px; /* 全域字體放大 */
+  font-size: 15px;
 }
 
-button, input, textarea {
+button, input, textarea, select {
   font: inherit;
 }
 
@@ -50,7 +50,8 @@ button {
 
 button:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+select:focus-visible {
   outline: 3px solid rgba(105, 214, 176, .5);
   outline-offset: 2px;
 }
@@ -243,9 +244,8 @@ textarea:focus-visible {
   color: var(--muted);
 }
 
+.settings-controls select,
 .settings-controls input {
-  width: 90px;
-  min-width: 0;
   padding: 8px 10px;
   background: #f7f9fc;
   border: 1px solid var(--border);
@@ -254,23 +254,12 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+.settings-controls select {
+  cursor: pointer;
+}
+
 .settings-controls #exchangeRate {
   width: 80px;
-}
-
-.currency-presets {
-  display: flex;
-  gap: 6px;
-}
-
-.preset-btn {
-  border: 1px solid var(--border);
-  background: #f0f4f9;
-  color: var(--primary);
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 700;
 }
 
 .summary-card {
@@ -743,13 +732,13 @@ textarea.form-control {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .custom-split-row input {
-  width: 100px;
+  width: 110px;
   padding: 6px 8px;
-  font-size: 13px;
+  font-size: 14px;
   text-align: right;
 }
 
@@ -979,22 +968,15 @@ textarea.form-control {
 
 <main class="container">
 
-  <!-- 匯率設定 -->
+  <!-- 幣別與匯率設定 -->
   <section class="card settings-card">
     <div class="settings-label">⚙️ 幣別與匯率</div>
     <div class="settings-controls">
-      <div class="currency-presets">
-        <button class="preset-btn" onclick="setQuickCurrency('JPY', 0.21)">日幣 (JPY)</button>
-        <button class="preset-btn" onclick="setQuickCurrency('TWD', 1)">台幣 (TWD)</button>
-      </div>
       <span>幣別</span>
-      <input
-        type="text"
-        id="currencySymbol"
-        value="JPY"
-        maxlength="8"
-        aria-label="外幣幣別"
-      >
+      <select id="currencySymbol" onchange="onCurrencySelectChange(this.value)">
+        <option value="JPY">日幣 (JPY)</option>
+        <option value="TWD">台幣 (TWD)</option>
+      </select>
       <span>1 單位 =</span>
       <input
         type="number"
@@ -1201,7 +1183,7 @@ textarea.form-control {
         </div>
       </div>
 
-      <p class="section-caption">選擇分攤方式或切換成員，也可直接自訂個人分攤金額。</p>
+      <p class="section-caption">選擇分攤方式，填寫個人金額後，其餘成員將自動平分剩餘金額。</p>
 
       <div id="splitItemsContainer"></div>
     </section>
@@ -1396,9 +1378,12 @@ function switchTab(tabName) {
    幣別與匯率切換
 ========================= */
 
-function setQuickCurrency(currency, rate) {
-  document.getElementById("currencySymbol").value = currency;
-  document.getElementById("exchangeRate").value = rate;
+function onCurrencySelectChange(currency) {
+  if (currency === "JPY") {
+    document.getElementById("exchangeRate").value = 0.21;
+  } else if (currency === "TWD") {
+    document.getElementById("exchangeRate").value = 1.0;
+  }
   updateSettings();
 }
 
@@ -1406,14 +1391,8 @@ function updateSettings() {
   const currencyInput = document.getElementById("currencySymbol");
   const rateInput = document.getElementById("exchangeRate");
 
-  const currency = currencyInput.value.trim().toUpperCase();
+  const currency = currencyInput.value;
   const rate = Number(rateInput.value);
-
-  if (!currency) {
-    showToast("請輸入幣別，例如 JPY、USD 或 KRW");
-    currencyInput.focus();
-    return;
-  }
 
   if (!validRate(rate)) {
     showToast("匯率必須大於 0");
@@ -1842,7 +1821,7 @@ function parseAndImportText() {
         id: Date.now() + Math.random(),
         name,
         price,
-        splitMode: 'even', // even: 均分, custom: 自訂
+        splitMode: 'even',
         assignedMembers: [...members],
         customAmounts: {}
       });
@@ -1915,7 +1894,7 @@ function updateSplitItemPrice(id, value) {
     item.price = 0;
   }
 
-  calculateSplit();
+  renderSplitItems();
 }
 
 function removeSplitItem(id) {
@@ -1931,12 +1910,18 @@ function toggleSplitMode(itemId, mode) {
   renderSplitItems();
 }
 
-function updateCustomAmount(itemId, member, amount) {
+function updateCustomAmount(itemId, member, rawValue) {
   const item = splitItems.find(entry => entry.id === itemId);
   if (!item) return;
   if (!item.customAmounts) item.customAmounts = {};
-  item.customAmounts[member] = Number(amount) || 0;
-  calculateSplit();
+
+  if (rawValue === "" || rawValue === null) {
+    delete item.customAmounts[member];
+  } else {
+    item.customAmounts[member] = Number(rawValue);
+  }
+
+  renderSplitItems();
 }
 
 function toggleMemberAssign(itemId, memberName) {
@@ -1952,6 +1937,35 @@ function toggleMemberAssign(itemId, memberName) {
   }
 
   renderSplitItems();
+}
+
+/* 計算個人自訂金額（含剩餘金額自動平分） */
+function getCalculatedCustomAmounts(item) {
+  const calculated = {};
+  const totalPrice = Number(item.price) || 0;
+  const customAmounts = item.customAmounts || {};
+
+  let filledSum = 0;
+  const unfilledMembers = [];
+
+  members.forEach(m => {
+    if (Object.prototype.hasOwnProperty.call(customAmounts, m) && customAmounts[m] !== "") {
+      const val = Number(customAmounts[m]) || 0;
+      calculated[m] = val;
+      filledSum += val;
+    } else {
+      unfilledMembers.push(m);
+    }
+  });
+
+  const remaining = Math.max(0, totalPrice - filledSum);
+  const share = unfilledMembers.length > 0 ? remaining / unfilledMembers.length : 0;
+
+  unfilledMembers.forEach(m => {
+    calculated[m] = Math.round((share + Number.EPSILON) * 100) / 100;
+  });
+
+  return calculated;
 }
 
 function renderSplitItems() {
@@ -2033,20 +2047,26 @@ function renderSplitItems() {
       });
     } else {
       const customContainer = row.querySelector(".custom-split-inputs");
+      const calculatedAmounts = getCalculatedCustomAmounts(item);
+
       members.forEach(member => {
         const customRow = document.createElement("div");
         customRow.className = "custom-split-row";
-        const currentVal = item.customAmounts?.[member] ?? 0;
+        const isUserFilled = Object.prototype.hasOwnProperty.call(item.customAmounts || {}, member);
+        const displayVal = isUserFilled ? item.customAmounts[member] : calculatedAmounts[member];
+
         customRow.innerHTML = `
-          <span>👤 ${escapeHtml(member)}</span>
+          <span>👤 ${escapeHtml(member)} ${!isUserFilled ? '<small style="color:var(--muted); font-size:11px;">(剩餘自動平分)</small>' : ''}</span>
           <div>
-            <input type="number" class="form-control" min="0" step="any" value="${currentVal}" placeholder="0">
+            <input type="number" class="form-control" min="0" step="any" value="${displayVal ?? ''}" placeholder="0">
             <span>${escapeHtml(settings.currency)}</span>
           </div>
         `;
+
         customRow.querySelector("input").addEventListener("input", (e) => {
           updateCustomAmount(item.id, member, e.target.value);
         });
+
         customContainer.appendChild(customRow);
       });
     }
@@ -2082,9 +2102,9 @@ function calculateSplit() {
     grandTotal += price;
 
     if (item.splitMode === 'custom') {
+      const calculated = getCalculatedCustomAmounts(item);
       members.forEach(member => {
-        const amt = Number(item.customAmounts?.[member] || 0);
-        totals[member] += amt;
+        totals[member] += calculated[member] || 0;
       });
     } else {
       const assigned = item.assignedMembers.filter(
@@ -2155,8 +2175,9 @@ function importSplitToDaily() {
     if (!Number.isFinite(price) || price <= 0) return;
 
     if (item.splitMode === 'custom') {
+      const calculated = getCalculatedCustomAmounts(item);
       members.forEach(member => {
-        totals[member] += Number(item.customAmounts?.[member] || 0);
+        totals[member] += calculated[member] || 0;
       });
     } else {
       const assigned = item.assignedMembers.filter(
