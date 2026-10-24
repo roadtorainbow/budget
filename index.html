@@ -2053,24 +2053,24 @@ function renderSplitItems() {
         const customRow = document.createElement("div");
         customRow.className = "custom-split-row";
         const isUserFilled = Object.prototype.hasOwnProperty.call(item.customAmounts || {}, member);
-        const displayVal = isUserFilled ? item.customAmounts[member] : calculatedAmounts[member];
+        const displayVal = isUserFilled ? item.customAmounts[member] : '';
 
         customRow.innerHTML = `
-          <span>👤 ${escapeHtml(member)} ${!isUserFilled ? '<small style="color:var(--muted); font-size:11px;">(剩餘自動平分)</small>' : ''}</span>
+          <span>👤 ${escapeHtml(member)} ${!isUserFilled ? `<small style="color:var(--muted); font-size:11px;">(未填預設: ${calculatedAmounts[member]})</small>` : ''}</span>
           <div>
-            <input type="number" class="form-control" min="0" step="any" value="${displayVal ?? ''}" placeholder="0">
+            <input type="number" class="form-control" min="0" step="any" value="${displayVal}" placeholder="${calculatedAmounts[member]}">
             <span>${escapeHtml(settings.currency)}</span>
           </div>
         `;
 
         const inputEl = customRow.querySelector("input");
 
-        // 在輸入打字時僅更新計算結果，不觸發 renderSplitItems() 以防輸入框焦點遺失
+        // 即時計算總結算結果，但不進行全面的 DOM 重繪以防干擾打字輸入
         inputEl.addEventListener("input", (e) => {
           updateCustomAmount(item.id, member, e.target.value);
         });
 
-        // 離開輸入框或按下 Enter 時才全面重繪提示標籤
+        // 離開輸入框時再更新提示標籤
         inputEl.addEventListener("blur", () => {
           renderSplitItems();
         });
