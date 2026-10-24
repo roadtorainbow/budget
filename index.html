@@ -1894,7 +1894,7 @@ function updateSplitItemPrice(id, value) {
     item.price = 0;
   }
 
-  renderSplitItems();
+  calculateSplit();
 }
 
 function removeSplitItem(id) {
@@ -1921,7 +1921,7 @@ function updateCustomAmount(itemId, member, rawValue) {
     item.customAmounts[member] = Number(rawValue);
   }
 
-  renderSplitItems();
+  calculateSplit();
 }
 
 function toggleMemberAssign(itemId, memberName) {
@@ -1949,7 +1949,7 @@ function getCalculatedCustomAmounts(item) {
   const unfilledMembers = [];
 
   members.forEach(m => {
-    if (Object.prototype.hasOwnProperty.call(customAmounts, m) && customAmounts[m] !== "") {
+    if (Object.prototype.hasOwnProperty.call(customAmounts, m) && customAmounts[m] !== "" && customAmounts[m] !== undefined) {
       const val = Number(customAmounts[m]) || 0;
       calculated[m] = val;
       filledSum += val;
@@ -2063,8 +2063,22 @@ function renderSplitItems() {
           </div>
         `;
 
-        customRow.querySelector("input").addEventListener("input", (e) => {
+        const inputEl = customRow.querySelector("input");
+
+        // 在輸入打字時僅更新計算結果，不觸發 renderSplitItems() 以防輸入框焦點遺失
+        inputEl.addEventListener("input", (e) => {
           updateCustomAmount(item.id, member, e.target.value);
+        });
+
+        // 離開輸入框或按下 Enter 時才全面重繪提示標籤
+        inputEl.addEventListener("blur", () => {
+          renderSplitItems();
+        });
+
+        inputEl.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            inputEl.blur();
+          }
         });
 
         customContainer.appendChild(customRow);
